@@ -2,9 +2,9 @@ from enum import IntEnum
 from datetime import datetime
 from typing import Any, Dict, List, Union, Literal, Optional
 
-from pydantic import Field, BaseModel, validator, Extra, root_validator
+from pydantic import Extra, Field, BaseModel, validator, root_validator
 
-from .utils import Element, parse, log
+from .utils import Element, log, parse
 
 
 class ChannelType(IntEnum):
@@ -133,7 +133,6 @@ class InnerMessage(BaseModel, extra=Extra.allow):
     user: Optional[User] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-
 
     @root_validator(pre=True)
     def ensure_content(cls, values):
