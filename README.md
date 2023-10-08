@@ -23,7 +23,7 @@ _✨ NoneBot2 Satori Protocol适配器 / Satori Protocol Adapter for NoneBot2 �
 
 ### Driver
 
-参考 [driver](https://nonebot.dev/docs/appendices/config#driver) 配置项，添加 `ForwardDriver` 支持。
+参考 [driver](https://nonebot.dev/docs/appendices/config#driver) 配置项，添加 `HTTPClient` 和 `WebSocketClient` 支持。
 
 如：
 
