@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-satori"
-version = "0.1.2"
+version = "0.1.3"
 description = "Satori Protocol Adapter for Nonebot2"
 authors = [
     {name = "RF-Tar-Railt",email = "rf_tar_railt@qq.com"},

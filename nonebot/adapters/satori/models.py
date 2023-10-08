@@ -16,7 +16,7 @@ class ChannelType(IntEnum):
 
 class Channel(BaseModel, extra=Extra.allow):
     id: str
-    name: str
+    name: Optional[str] = None
     type: ChannelType
     parent_id: Optional[str] = None
 
@@ -48,8 +48,8 @@ class InnerMember(BaseModel, extra=Extra.allow):
             return v
         try:
             timestamp = int(v)
-        except ValueError:
-            raise ValueError(f"invalid timestamp: {v}")
+        except ValueError as e:
+            raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
 
@@ -164,8 +164,8 @@ class InnerMessage(BaseModel, extra=Extra.allow):
             return v
         try:
             timestamp = int(v)
-        except ValueError:
-            raise ValueError(f"invalid timestamp: {v}")
+        except ValueError as e:
+            raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
     @validator("updated_at", pre=True)
@@ -176,8 +176,8 @@ class InnerMessage(BaseModel, extra=Extra.allow):
             return v
         try:
             timestamp = int(v)
-        except ValueError:
-            raise ValueError(f"invalid timestamp: {v}")
+        except ValueError as e:
+            raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
 

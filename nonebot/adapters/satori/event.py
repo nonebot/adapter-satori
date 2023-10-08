@@ -320,7 +320,7 @@ class PrivateMessageCreatedEvent(MessageCreatedEvent, PrivateMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name}({self.channel.id}): {self.get_message()!r}"
+            f"{self.user.name or ''}({self.channel.id}): {self.get_message()!r}"
         )
 
 
@@ -330,7 +330,7 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name}:{self.guild.id}/{self.channel.id}]"
+            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}]"
             f": {self.get_message()!r}"
         )
 
@@ -340,7 +340,7 @@ class PrivateMessageDeletedEvent(MessageDeletedEvent, PrivateMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name}({self.channel.id}) deleted"
+            f"{self.user.name or ''}({self.channel.id}) deleted"
         )
 
 
@@ -350,7 +350,7 @@ class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name}:{self.guild.id}/{self.channel.id}] deleted"
+            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}] deleted"
         )
 
 
@@ -359,7 +359,7 @@ class PrivateMessageUpdatedEvent(MessageUpdatedEvent, PrivateMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name}({self.channel.id}) updated"
+            f"{self.user.name or ''}({self.channel.id}) updated"
             f": {self.get_message()!r}"
         )
 
@@ -370,7 +370,7 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name}:{self.guild.id}/{self.channel.id}] updated"
+            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}] updated"
             f": {self.get_message()!r}"
         )
 
