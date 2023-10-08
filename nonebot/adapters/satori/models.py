@@ -14,27 +14,27 @@ class ChannelType(IntEnum):
     DIRECT = 3
 
 
-class Channel(BaseModel):
+class Channel(BaseModel, extra=Extra.allow):
     id: str
     name: str
     type: ChannelType
     parent_id: Optional[str] = None
 
 
-class Guild(BaseModel):
+class Guild(BaseModel, extra=Extra.allow):
     id: str
     name: str
     avatar: Optional[str] = None
 
 
-class User(BaseModel):
+class User(BaseModel, extra=Extra.allow):
     id: str
     name: Optional[str] = None
     avatar: Optional[str] = None
     is_bot: Optional[bool] = None
 
 
-class InnerMember(BaseModel):
+class InnerMember(BaseModel, extra=Extra.allow):
     user: Optional[User] = None
     name: Optional[str] = None
     avatar: Optional[str] = None
@@ -58,7 +58,7 @@ class OuterMember(InnerMember):
     joined_at: datetime
 
 
-class Role(BaseModel):
+class Role(BaseModel, extra=Extra.allow):
     id: str
     name: str
 
@@ -124,7 +124,7 @@ class PongPayload(Payload):
     op: Literal[Opcode.PONG] = Field(Opcode.PONG)
 
 
-class InnerMessage(BaseModel):
+class InnerMessage(BaseModel, extra=Extra.allow):
     id: str
     content: List[Element]
     channel: Optional[Channel] = None
@@ -190,7 +190,7 @@ class OuterMessage(InnerMessage):
     updated_at: datetime
 
 
-class Event(BaseModel):
+class Event(BaseModel, extra=Extra.allow):
     id: int
     type: str
     platform: str
@@ -213,8 +213,8 @@ class Event(BaseModel):
             return v
         try:
             timestamp = int(v)
-        except ValueError:
-            raise ValueError(f"invalid timestamp: {v}")
+        except ValueError as e:
+            raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
 
