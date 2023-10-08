@@ -40,8 +40,8 @@ DRIVER=~aiohttp
 SATORI_CLIENTS='
 [
   {
-    "port": "localhost",
-    "host": "5500",
+    "host": "localhost",
+    "port": "5500",
     "token": "xxx"
   }
 ]
