@@ -2,9 +2,9 @@ from enum import IntEnum
 from datetime import datetime
 from typing import Any, Dict, List, Union, Literal, Optional
 
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, BaseModel, validator, Extra, root_validator
 
-from .utils import Element, parse
+from .utils import Element, parse, log
 
 
 class ChannelType(IntEnum):
@@ -71,7 +71,7 @@ class LoginStatus(IntEnum):
     RECONNECT = 4
 
 
-class InnerLogin(BaseModel):
+class InnerLogin(BaseModel, extra=Extra.allow):
     user: Optional[User] = None
     self_id: Optional[str] = None
     platform: Optional[str] = None
@@ -126,13 +126,25 @@ class PongPayload(Payload):
 
 class InnerMessage(BaseModel):
     id: str
-    content: Optional[List[Element]] = None
+    content: List[Element]
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
     member: Optional[InnerMember] = None
     user: Optional[User] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+
+    @root_validator(pre=True)
+    def ensure_content(cls, values):
+        if "content" in values:
+            return values
+        log(
+            "WARNING",
+            "received message without content, "
+            "this may be caused by a bug of Satori Server.",
+        )
+        return {**values, "content": "Unknown"}
 
     @validator("content", pre=True)
     def parse_content(cls, v):
