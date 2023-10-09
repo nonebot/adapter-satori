@@ -71,17 +71,11 @@ class LoginStatus(IntEnum):
     RECONNECT = 4
 
 
-class InnerLogin(BaseModel, extra=Extra.allow):
+class Login(BaseModel, extra=Extra.allow):
     user: Optional[User] = None
     self_id: Optional[str] = None
     platform: Optional[str] = None
     status: LoginStatus
-
-
-class OuterLogin(InnerLogin):
-    user: User
-    self_id: str
-    platform: str
 
 
 class Opcode(IntEnum):
@@ -103,7 +97,7 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: List[OuterLogin]
+    logins: List[Login]
 
 
 class IdentifyPayload(Payload):
@@ -197,7 +191,7 @@ class Event(BaseModel, extra=Extra.allow):
     timestamp: datetime
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
-    login: Optional[InnerLogin] = None
+    login: Optional[Login] = None
     member: Optional[InnerMember] = None
     message: Optional[InnerMessage] = None
     operator: Optional[User] = None

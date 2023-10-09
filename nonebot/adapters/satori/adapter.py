@@ -30,6 +30,7 @@ from .event import (
 )
 from .models import (
     Payload,
+    LoginStatus,
     PayloadType,
     PingPayload,
     PongPayload,
@@ -134,6 +135,10 @@ class Adapter(BaseAdapter):
             )
             return
         for login in resp.body.logins:
+            if not login.self_id:
+                continue
+            if login.status != LoginStatus.ONLINE:
+                continue
             if login.self_id not in self.bots:
                 bot = Bot(self, login.self_id, login.platform, info)
                 self.bot_connect(bot)
@@ -144,7 +149,9 @@ class Adapter(BaseAdapter):
             else:
                 bot = self.bots[login.self_id]
             bot.on_ready(login.user)
-
+        if not self.bots:
+            log("WARNING", "No bots connected!")
+            return
         return True
 
     async def _heartbeat(self, info: ClientInfo, ws: WebSocket):
@@ -269,8 +276,7 @@ class Adapter(BaseAdapter):
         EventClass = EVENT_CLASSES.get(payload.type, None)
         if EventClass is None:
             log("WARNING", f"Unknown payload type: {payload.type}")
-            event = Event.parse_obj(payload)
-            return event
+            return Event.parse_obj(payload)
         return EventClass.parse_obj(payload)
 
     @override

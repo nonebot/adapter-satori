@@ -13,7 +13,7 @@ from .config import ClientInfo
 from .event import Event, MessageEvent
 from .message import Message, MessageSegment
 from .models import InnerMessage as SatoriMessage
-from .models import Role, User, Guild, Channel, OuterLogin, OuterMember
+from .models import Role, User, Guild, Login, Channel, OuterMember
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -514,7 +514,7 @@ class Bot(BaseBot):
             "POST",
             self.info.api_base / "login.get",
         )
-        return OuterLogin.parse_obj(await self._request(request))
+        return Login.parse_obj(await self._request(request))
 
     @API
     async def user_get(self, *, user_id: str):
@@ -542,3 +542,17 @@ class Bot(BaseBot):
             json={"message_id": request_id, "approve": approve, "comment": comment},
         )
         await self._request(request)
+
+    @API
+    async def internal(
+        self,
+        *,
+        action: str,
+        **kwargs,
+    ):
+        request = Request(
+            "POST",
+            self.info.api_base / "internal" / action,
+            json=kwargs,
+        )
+        return await self._request(request)

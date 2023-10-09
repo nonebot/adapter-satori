@@ -12,7 +12,7 @@ from .models import Role, User
 from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import InnerMessage as SatoriMessage
-from .models import Guild, Channel, InnerLogin, ChannelType, InnerMember
+from .models import Guild, Login, Channel, ChannelType, InnerMember
 
 E = TypeVar("E", bound="Event")
 
@@ -191,7 +191,7 @@ class GuildRoleUpdatedEvent(GuildRoleEvent):
 
 
 class LoginEvent(NoticeEvent):
-    login: InnerLogin
+    login: Login
     user: User
 
     @override
