@@ -284,5 +284,5 @@ class Adapter(BaseAdapter):
         log("DEBUG", f"Bot {bot.self_id} calling API <y>{api}</y>")
         api_handler: Optional[API] = getattr(bot.__class__, api, None)
         if api_handler is None:
-            raise ApiNotAvailable
+            raise ApiNotAvailable(api)
         return await api_handler(bot, **data)

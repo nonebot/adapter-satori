@@ -1,7 +1,8 @@
 from enum import IntEnum
 from datetime import datetime
-from typing import Any, Dict, List, Union, Literal, Optional
+from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
 
+from pydantic.generics import GenericModel
 from pydantic import Extra, Field, BaseModel, validator, root_validator
 
 from .utils import Element, log, parse
@@ -220,3 +221,11 @@ PayloadType = Union[
     Union[EventPayload, PingPayload, PongPayload, IdentifyPayload, ReadyPayload],
     Payload,
 ]
+
+
+T = TypeVar("T")
+
+
+class PageResult(GenericModel, Generic[T], extra=Extra.allow):
+    data: List[T]
+    next: Optional[str] = None

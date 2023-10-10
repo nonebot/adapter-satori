@@ -33,9 +33,9 @@ class ActionFailed(BaseActionFailed, SatoriAdapterException):
         return self.__repr__()
 
     def _prepare_body(self, body: dict):
-        self.code = body.get("code", None)
-        self.message = body.get("message", None)
-        self.data = body.get("data", None)
+        self.code = body.get("code")
+        self.message = body.get("message")
+        self.data = body.get("data")
 
 
 class BadRequestException(ActionFailed):
@@ -58,6 +58,10 @@ class MethodNotAllowedException(ActionFailed):
     pass
 
 
+class ApiNotImplementedException(ActionFailed):
+    pass
+
+
 class NetworkError(BaseNetworkError, SatoriAdapterException):
     def __init__(self, msg: Optional[str] = None):
         super().__init__()
@@ -72,4 +76,7 @@ class NetworkError(BaseNetworkError, SatoriAdapterException):
 
 
 class ApiNotAvailable(BaseApiNotAvailable, SatoriAdapterException):
-    pass
+    def __init__(self, msg: Optional[str] = None):
+        super().__init__()
+        self.msg: Optional[str] = msg
+        """错误原因"""

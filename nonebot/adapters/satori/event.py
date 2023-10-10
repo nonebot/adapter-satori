@@ -87,7 +87,6 @@ class NoticeEvent(Event):
 
 
 class FriendEvent(NoticeEvent):
-    channel: Channel
     user: User
 
     @override
@@ -105,12 +104,11 @@ class FriendRequestEvent(FriendEvent):
 
 
 class GuildEvent(NoticeEvent):
-    channel: Channel
     guild: Guild
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.guild.id}/{self.channel.id}"
+        return self.guild.id
 
 
 @register_event_class
@@ -134,15 +132,16 @@ class GuildUpdatedEvent(GuildEvent):
 
 
 class GuildInnerMemberEvent(GuildEvent):
+    member: InnerMember
     user: User
 
     @override
     def get_user_id(self) -> str:
-        return self.member.user.id if self.member else self.user.id
+        return self.user.id
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.guild.id}/{self.channel.id}/{self.get_user_id()}"
+        return f"{self.guild.id}/{self.get_user_id()}"
 
 
 @register_event_class
@@ -152,7 +151,6 @@ class GuildInnerMemberAddedEvent(GuildInnerMemberEvent):
 
 @register_event_class
 class GuildInnerMemberRemovedEvent(GuildInnerMemberEvent):
-    member: InnerMember
     __type__ = EventType.GUILD_MEMBER_REMOVED
 
 
@@ -163,7 +161,6 @@ class GuildInnerMemberRequestEvent(GuildInnerMemberEvent):
 
 @register_event_class
 class GuildInnerMemberUpdatedEvent(GuildInnerMemberEvent):
-    member: InnerMember
     __type__ = EventType.GUILD_MEMBER_UPDATED
 
 
@@ -172,7 +169,7 @@ class GuildRoleEvent(GuildEvent):
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.guild.id}/{self.channel.id}/{self.role.id}"
+        return f"{self.guild.id}/{self.role.id}"
 
 
 @register_event_class
@@ -192,15 +189,6 @@ class GuildRoleUpdatedEvent(GuildRoleEvent):
 
 class LoginEvent(NoticeEvent):
     login: Login
-    user: User
-
-    @override
-    def get_user_id(self) -> str:
-        return self.user.id
-
-    @override
-    def get_session_id(self) -> str:
-        return self.user.id
 
 
 @register_event_class
@@ -303,12 +291,14 @@ class PrivateMessageEvent(MessageEvent):
 
 
 class PublicMessageEvent(MessageEvent):
-    guild: Guild
     member: InnerMember
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.guild.id}/{self.channel.id}/{self.user.id}"
+        s = f"{self.channel.id}/{self.user.id}"
+        if self.guild:
+            s = f"{self.guild.id}/{s}"
+        return s
 
     @override
     def get_user_id(self) -> str:
@@ -330,7 +320,7 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}]"
+            f"@[{self.channel.name or ''}:{self.channel.id}]"
             f": {self.get_message()!r}"
         )
 
@@ -350,7 +340,7 @@ class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}] deleted"
+            f"@[{self.channel.name or ''}:{self.channel.id}] deleted"
         )
 
 
@@ -370,7 +360,7 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
         return escape_tag(
             f"Message {self.msg_id} from "
             f"{self.user.name or ''}({self.channel.id})"
-            f"@[{self.channel.name or ''}:{self.guild.id}/{self.channel.id}] updated"
+            f"@[{self.channel.name or ''}:{self.channel.id}] updated"
             f": {self.get_message()!r}"
         )
 

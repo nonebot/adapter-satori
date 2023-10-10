@@ -13,7 +13,7 @@ from .config import ClientInfo
 from .event import Event, MessageEvent
 from .message import Message, MessageSegment
 from .models import InnerMessage as SatoriMessage
-from .models import Role, User, Guild, Login, Channel, OuterMember
+from .models import Role, User, Guild, Login, Channel, PageResult, OuterMember
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -22,6 +22,7 @@ from .exception import (
     BadRequestException,
     UnauthorizedException,
     MethodNotAllowedException,
+    ApiNotImplementedException,
 )
 
 if TYPE_CHECKING:
@@ -194,6 +195,8 @@ class Bot(BaseBot):
             raise NotFoundException(response)
         elif response.status_code == 405:
             raise MethodNotAllowedException(response)
+        elif response.status_code == 500:
+            raise ApiNotImplementedException(response)
         else:
             raise ActionFailed(response)
 
@@ -308,8 +311,7 @@ class Bot(BaseBot):
             self.info.api_base / "message.list",
             json={"channel_id": channel_id, "next": next_token},
         )
-        res = await self._request(request)
-        return [SatoriMessage.parse_obj(i) for i in res]
+        return PageResult[SatoriMessage].parse_obj(await self._request(request))
 
     @API
     async def channel_get(self, *, channel_id: str):
@@ -328,8 +330,7 @@ class Bot(BaseBot):
             self.info.api_base / "channel.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        res = await self._request(request)
-        return [Channel.parse_obj(i) for i in res]
+        return PageResult[Channel].parse_obj(await self._request(request))
 
     @API
     async def channel_create(self, *, guild_id: str, data: Channel):
@@ -388,7 +389,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.list",
             json={"next": next_token},
         )
-        return [Guild.parse_obj(i) for i in await self._request(request)]
+        return PageResult[Guild].parse_obj(await self._request(request))
 
     @API
     async def guild_approve(self, *, request_id: str, approve: bool, comment: str):
@@ -408,7 +409,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.member.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return [OuterMember.parse_obj(i) for i in await self._request(request)]
+        return PageResult[OuterMember].parse_obj(await self._request(request))
 
     @API
     async def guild_member_get(self, *, guild_id: str, user_id: str):
@@ -468,7 +469,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.role.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return [Role.parse_obj(i) for i in await self._request(request)]
+        return PageResult[Role].parse_obj(await self._request(request))
 
     @API
     async def guild_role_create(
@@ -509,6 +510,79 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
+    async def reaction_create(
+        self,
+        *,
+        channel_id: str,
+        message_id: str,
+        emoji: str,
+    ):
+        request = Request(
+            "POST",
+            self.info.api_base / "reaction.create",
+            json={"channel_id": channel_id, "message_id": message_id, "emoji": emoji},
+        )
+        await self._request(request)
+
+    @API
+    async def reaction_delete(
+        self,
+        *,
+        channel_id: str,
+        message_id: str,
+        emoji: str,
+        user_id: Optional[str] = None,
+    ):
+        data = {"channel_id": channel_id, "message_id": message_id, "emoji": emoji}
+        if user_id is not None:
+            data["user_id"] = user_id
+        request = Request(
+            "POST",
+            self.info.api_base / "reaction.delete",
+            json=data,
+        )
+        await self._request(request)
+
+    @API
+    async def reaction_clear(
+        self,
+        *,
+        channel_id: str,
+        message_id: str,
+        emoji: Optional[str] = None,
+    ):
+        data = {"channel_id": channel_id, "message_id": message_id}
+        if emoji is not None:
+            data["emoji"] = emoji
+        request = Request(
+            "POST",
+            self.info.api_base / "reaction.clear",
+            json=data,
+        )
+        await self._request(request)
+
+    @API
+    async def reaction_list(
+        self,
+        *,
+        channel_id: str,
+        message_id: str,
+        emoji: str,
+        next_token: Optional[str] = None,
+    ):
+        request = Request(
+            "POST",
+            self.info.api_base / "reaction.list",
+            json={
+                "channel_id": channel_id,
+                "message_id": message_id,
+                "emoji": emoji,
+                "next": next_token,
+            },
+        )
+        return PageResult[User].parse_obj(await self._request(request))
+
+    @API
     async def login_get(self):
         request = Request(
             "POST",
@@ -532,7 +606,7 @@ class Bot(BaseBot):
             self.info.api_base / "friend.list",
             json={"next": next_token},
         )
-        return [User.parse_obj(i) for i in await self._request(request)]
+        return PageResult[User].parse_obj(await self._request(request))
 
     @API
     async def friend_approve(self, *, request_id: str, approve: bool, comment: str):
