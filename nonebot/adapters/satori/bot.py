@@ -45,6 +45,7 @@ def _check_reply(
     except ValueError:
         return
 
+    event.to_me = True
     msg_seg = message[index]
 
     event.reply = msg_seg  # type: ignore
@@ -80,6 +81,7 @@ def _check_at_me(
     deleted = False
     if _is_at_me_seg(message[0]):
         message.pop(0)
+        event.to_me = True
         deleted = True
         if message and message[0].type == "text":
             message[0].data["text"] = message[0].data["text"].lstrip("\xa0").lstrip()
@@ -99,7 +101,7 @@ def _check_at_me(
             last_msg_seg = message[i]
 
         if _is_at_me_seg(last_msg_seg):
-            deleted = True
+            event.to_me = True
             del message[i:]
 
     if not message:

@@ -32,10 +32,6 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Text("text", {"text": content})
 
     @staticmethod
-    def entity(content: str, style: str) -> "Entity":
-        return Entity("entity", {"text": content, "style": style})
-
-    @staticmethod
     def at(
         user_id: str,
         name: Optional[str] = None,
@@ -68,7 +64,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def link(href: str) -> "Link":
-        return Link("link", {"href": href})
+        return Link("link", {"text": href})
 
     @staticmethod
     def image(
@@ -115,8 +111,40 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return File("file", data)
 
     @staticmethod
+    def bold(text: str) -> "Bold":
+        return Bold("bold", {"text": text})
+
+    @staticmethod
+    def italic(text: str) -> "Italic":
+        return Italic("italic", {"text": text})
+
+    @staticmethod
+    def underline(text: str) -> "Underline":
+        return Underline("underline", {"text": text})
+
+    @staticmethod
+    def strikethrough(text: str) -> "Strikethrough":
+        return Strikethrough("strikethrough", {"text": text})
+
+    @staticmethod
+    def spoiler(text: str) -> "Spoiler":
+        return Spoiler("spoiler", {"text": text})
+
+    @staticmethod
+    def code(text: str) -> "Code":
+        return Code("code", {"text": text})
+
+    @staticmethod
+    def superscript(text: str) -> "Superscript":
+        return Superscript("superscript", {"text": text})
+
+    @staticmethod
+    def subscript(text: str) -> "Subscript":
+        return Subscript("subscript", {"text": text})
+
+    @staticmethod
     def br() -> "Br":
-        return Br("br", {})
+        return Br("br", {"text": "\n"})
 
     @staticmethod
     def paragraph(text: str) -> "Paragraph":
@@ -165,7 +193,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @override
     def is_text(self) -> bool:
-        return self.type == "text"
+        return False
 
 
 class TextData(TypedDict):
@@ -180,20 +208,9 @@ class Text(MessageSegment):
     def __str__(self) -> str:
         return escape(self.data["text"])
 
-
-class EntityData(TypedDict):
-    text: str
-    style: str
-
-
-@dataclass
-class Entity(MessageSegment):
-    data: EntityData = field(default_factory=dict)
-
     @override
-    def __str__(self) -> str:
-        style = self.data["style"]
-        return f'<{style}>{escape(self.data["text"])}</{style}>'
+    def is_text(self) -> bool:
+        return True
 
 
 class AtData(TypedDict):
@@ -218,17 +235,17 @@ class Sharp(MessageSegment):
     data: SharpData = field(default_factory=dict)
 
 
-class LinkData(TypedDict):
-    href: str
-
-
 @dataclass
 class Link(MessageSegment):
-    data: LinkData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)
 
     @override
     def __str__(self):
-        return f'<a href="{escape(self.data["href"])}"/>'
+        return f'<a href="{escape(self.data["text"])}"/>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
 
 
 class ImageData(TypedDict):
@@ -278,23 +295,133 @@ class File(MessageSegment):
 
 
 @dataclass
+class Bold(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<b>{escape(self.data["text"])}</b>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Italic(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<i>{escape(self.data["text"])}</i>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Underline(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<u>{escape(self.data["text"])}</u>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Strikethrough(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<s>{escape(self.data["text"])}</s>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Spoiler(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<spl>{escape(self.data["text"])}</spl>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Code(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<code>{escape(self.data["text"])}</code>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Superscript(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<sup>{escape(self.data["text"])}</sup>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
+class Subscript(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        return f'<sub>{escape(self.data["text"])}</sub>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
+
+
+@dataclass
 class Br(MessageSegment):
+    data: TextData = field(default_factory=dict)
+
     @override
     def __str__(self):
         return "<br/>"
 
-
-class ParagraphData(TypedDict):
-    text: str
+    @override
+    def is_text(self) -> bool:
+        return True
 
 
 @dataclass
 class Paragraph(MessageSegment):
-    data: ParagraphData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)
 
     @override
     def __str__(self):
         return f'<p>{escape(self.data["text"])}</p>'
+
+    @override
+    def is_text(self) -> bool:
+        return True
 
 
 class RenderMessageData(TypedDict):
@@ -335,15 +462,28 @@ ELEMENT_TYPE_MAP = {
     "text": (Text, "text"),
     "at": (At, "at"),
     "sharp": (Sharp, "sharp"),
-    "a": (Link, "link"),
-    "link": (Link, "link"),
     "img": (Image, "img"),
     "image": (Image, "img"),
     "audio": (Audio, "audio"),
     "video": (Video, "video"),
     "file": (File, "file"),
-    "br": (Br, "br"),
     "author": (Author, "author"),
+}
+
+STYLE_TYPE_MAP = {
+    "b": (Bold, "bold"),
+    "strong": (Bold, "bold"),
+    "i": (Italic, "italic"),
+    "em": (Italic, "italic"),
+    "u": (Underline, "underline"),
+    "ins": (Underline, "underline"),
+    "s": (Strikethrough, "strikethrough"),
+    "del": (Strikethrough, "strikethrough"),
+    "spl": (Spoiler, "spoiler"),
+    "code": (Code, "code"),
+    "sup": (Superscript, "superscript"),
+    "sub": (Subscript, "subscript"),
+    "p": (Paragraph, "paragraph"),
 }
 
 
@@ -381,30 +521,13 @@ class Message(BaseMessage[MessageSegment]):
             if elem.type in ELEMENT_TYPE_MAP:
                 seg_cls, seg_type = ELEMENT_TYPE_MAP[elem.type]
                 msg.append(seg_cls(seg_type, elem.attrs.copy()))
-            elif elem.type in {
-                "b",
-                "strong",
-                "i",
-                "em",
-                "u",
-                "ins",
-                "s",
-                "del",
-                "spl",
-                "code",
-                "sup",
-                "sub",
-            }:
-                msg.append(
-                    Entity(
-                        "entity",
-                        {"text": elem.children[0].attrs["text"], "style": elem.type},
-                    )
-                )
-            elif elem.type in ("p", "paragraph"):
-                msg.append(
-                    Paragraph("paragraph", {"text": elem.children[0].attrs["text"]})
-                )
+            elif elem.type in ("a", "link"):
+                msg.append(Link("link", {"text": elem.attrs["href"]}))
+            elif elem.type in STYLE_TYPE_MAP:
+                seg_cls, seg_type = STYLE_TYPE_MAP[elem.type]
+                msg.append(seg_cls(seg_type, {"text": elem.children[0].attrs["text"]}))
+            elif elem.type in ("br", "newline"):
+                msg.append(Br("br", {"text": "\n"}))
             elif elem.type in ("message", "quote"):
                 data = elem.attrs.copy()
                 if elem.children:
@@ -414,9 +537,6 @@ class Message(BaseMessage[MessageSegment]):
                 msg.append(Text("text", {"text": str(elem)}))
         return msg
 
-    def extract_content(self) -> str:
-        return "".join(
-            str(seg)
-            for seg in self
-            if seg.type in ("text", "entity", "at", "sharp", "link")
-        )
+    @override
+    def extract_plain_text(self) -> str:
+        return "".join(seg.data["text"] for seg in self if seg.is_text())
