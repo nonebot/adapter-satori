@@ -1,3 +1,6 @@
+from io import BytesIO
+from pathlib import Path
+from base64 import b64encode
 from dataclasses import field, dataclass
 from typing_extensions import NotRequired, override
 from typing import Any, List, Type, Union, Iterable, Optional, TypedDict
@@ -6,6 +9,11 @@ from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from .utils import Element, parse, escape
+
+
+class RawData(TypedDict):
+    data: Union[bytes, BytesIO]
+    mime: str
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -68,9 +76,25 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def image(
-        src: str, cache: Optional[bool] = None, timeout: Optional[str] = None
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[RawData] = None,
+        cache: Optional[bool] = None,
+        timeout: Optional[str] = None,
     ) -> "Image":
-        data = {"src": src}
+        if url:
+            data = {"src": url}
+        elif path:
+            data = {"src": Path(path).as_uri()}
+        elif raw:
+            bd = (
+                raw["data"]
+                if isinstance(raw["data"], bytes)
+                else raw["data"].getvalue()
+            )
+            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        else:
+            raise ValueError("image need at least one of url, path and raw")
         if cache is not None:
             data["cache"] = cache
         if timeout is not None:
@@ -79,9 +103,25 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def audio(
-        src: str, cache: Optional[bool] = None, timeout: Optional[str] = None
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[RawData] = None,
+        cache: Optional[bool] = None,
+        timeout: Optional[str] = None,
     ) -> "Audio":
-        data = {"src": src}
+        if url:
+            data = {"src": url}
+        elif path:
+            data = {"src": Path(path).as_uri()}
+        elif raw:
+            bd = (
+                raw["data"]
+                if isinstance(raw["data"], bytes)
+                else raw["data"].getvalue()
+            )
+            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        else:
+            raise ValueError("audio need at least one of url, path and raw")
         if cache is not None:
             data["cache"] = cache
         if timeout is not None:
@@ -90,9 +130,25 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def video(
-        src: str, cache: Optional[bool] = None, timeout: Optional[str] = None
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[RawData] = None,
+        cache: Optional[bool] = None,
+        timeout: Optional[str] = None,
     ) -> "Video":
-        data = {"src": src}
+        if url:
+            data = {"src": url}
+        elif path:
+            data = {"src": Path(path).as_uri()}
+        elif raw:
+            bd = (
+                raw["data"]
+                if isinstance(raw["data"], bytes)
+                else raw["data"].getvalue()
+            )
+            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        else:
+            raise ValueError("video need at least one of url, path and raw")
         if cache is not None:
             data["cache"] = cache
         if timeout is not None:
@@ -101,9 +157,25 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def file(
-        src: str, cache: Optional[bool] = None, timeout: Optional[str] = None
+        url: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        raw: Optional[RawData] = None,
+        cache: Optional[bool] = None,
+        timeout: Optional[str] = None,
     ) -> "File":
-        data = {"src": src}
+        if url:
+            data = {"src": url}
+        elif path:
+            data = {"src": Path(path).as_uri()}
+        elif raw:
+            bd = (
+                raw["data"]
+                if isinstance(raw["data"], bytes)
+                else raw["data"].getvalue()
+            )
+            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        else:
+            raise ValueError("file need at least one of url, path and raw")
         if cache is not None:
             data["cache"] = cache
         if timeout is not None:
