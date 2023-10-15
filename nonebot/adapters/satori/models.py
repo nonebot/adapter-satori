@@ -17,14 +17,14 @@ class ChannelType(IntEnum):
 
 class Channel(BaseModel, extra=Extra.allow):
     id: str
-    name: Optional[str] = None
     type: ChannelType
+    name: Optional[str] = None
     parent_id: Optional[str] = None
 
 
 class Guild(BaseModel, extra=Extra.allow):
     id: str
-    name: str
+    name: Optional[str] = None
     avatar: Optional[str] = None
 
 
@@ -61,7 +61,7 @@ class OuterMember(InnerMember):
 
 class Role(BaseModel, extra=Extra.allow):
     id: str
-    name: str
+    name: Optional[str] = None
 
 
 class LoginStatus(IntEnum):
