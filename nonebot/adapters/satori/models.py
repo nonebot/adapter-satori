@@ -135,8 +135,7 @@ class InnerMessage(BaseModel, extra=Extra.allow):
             return values
         log(
             "WARNING",
-            "received message without content, "
-            "this may be caused by a bug of Satori Server.",
+            "received message without content, " "this may be caused by a bug of Satori Server.",
         )
         return {**values, "content": "Unknown"}
 

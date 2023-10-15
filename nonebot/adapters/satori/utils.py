@@ -29,21 +29,11 @@ log = logger_wrapper("Satori")
 
 
 def escape(text: str) -> str:
-    return (
-        text.replace('"', "&quot;")
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return text.replace('"', "&quot;").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def unescape(text: str) -> str:
-    return (
-        text.replace("&quot;", '"')
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-    )
+    return text.replace("&quot;", '"').replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
 
 
 class Element(BaseModel):
@@ -141,9 +131,7 @@ def parse(src: str):
             while index < len(stack) and stack[index].type != tkn.type:
                 index += 1
             if index == len(stack):
-                stack[0].children.append(
-                    Element(type="text", attrs={"text": tkn.source})
-                )
+                stack[0].children.append(Element(type="text", attrs={"text": tkn.source}))
             else:
                 rollback(index)
                 elm = stack.pop(0)

@@ -92,11 +92,7 @@ def _check_at_me(
         # check the last segment
         i = -1
         last_msg_seg = message[i]
-        if (
-            last_msg_seg.type == "text"
-            and not last_msg_seg.data["text"].strip()
-            and len(message) >= 2
-        ):
+        if last_msg_seg.type == "text" and not last_msg_seg.data["text"].strip() and len(message) >= 2:
             i -= 1
             last_msg_seg = message[i]
 
@@ -137,9 +133,7 @@ class Bot(BaseBot):
     adapter: "Adapter"
 
     @override
-    def __init__(
-        self, adapter: "Adapter", self_id: str, platform: str, info: ClientInfo
-    ):
+    def __init__(self, adapter: "Adapter", self_id: str, platform: str, info: ClientInfo):
         super().__init__(adapter, self_id)
 
         # Bot 配置信息
@@ -161,9 +155,7 @@ class Bot(BaseBot):
     def self_info(self) -> User:
         """Bot 自身信息，仅当 Bot 连接鉴权完成后可用"""
         if self._self_info is None:
-            raise RuntimeError(
-                f"Bot {self.self_id} of {self.platform} is not connected!"
-            )
+            raise RuntimeError(f"Bot {self.self_id} of {self.platform} is not connected!")
         return self._self_info
 
     def on_ready(self, user: User) -> None:
@@ -249,9 +241,7 @@ class Bot(BaseBot):
             message_id: 要更新的消息 ID
             message: 要更新的消息
         """
-        return await self.message_update(
-            channel_id=channel_id, message_id=message_id, content=str(message)
-        )
+        return await self.message_update(channel_id=channel_id, message_id=message_id, content=str(message))
 
     @API
     async def message_create(
@@ -403,9 +393,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_list(
-        self, *, guild_id: str, next_token: Optional[str] = None
-    ):
+    async def guild_member_list(self, *, guild_id: str, next_token: Optional[str] = None):
         request = Request(
             "POST",
             self.info.api_base / "guild.member.list",
@@ -423,9 +411,7 @@ class Bot(BaseBot):
         return OuterMember.parse_obj(await self._request(request))
 
     @API
-    async def guild_member_kick(
-        self, *, guild_id: str, user_id: str, permanent: bool = False
-    ):
+    async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False):
         request = Request(
             "POST",
             self.info.api_base / "guild.member.kick",
@@ -434,9 +420,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_approve(
-        self, *, request_id: str, approve: bool, comment: str
-    ):
+    async def guild_member_approve(self, *, request_id: str, approve: bool, comment: str):
         request = Request(
             "POST",
             self.info.api_base / "guild.member.approve",
@@ -454,9 +438,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_role_unset(
-        self, *, guild_id: str, user_id: str, role_id: str
-    ):
+    async def guild_member_role_unset(self, *, guild_id: str, user_id: str, role_id: str):
         request = Request(
             "POST",
             self.info.api_base / "guild.member.role.unset",

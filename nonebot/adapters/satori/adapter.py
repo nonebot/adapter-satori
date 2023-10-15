@@ -5,13 +5,7 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import parse_raw_as
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed
-from nonebot.drivers import (
-    Driver,
-    Request,
-    WebSocket,
-    HTTPClientMixin,
-    WebSocketClientMixin,
-)
+from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
 
 from nonebot.adapters import Adapter as BaseAdapter
 
@@ -20,14 +14,7 @@ from .utils import API, log
 from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
 from .models import Event as SatoriEvent
-from .event import (
-    EVENT_CLASSES,
-    Event,
-    MessageEvent,
-    LoginAddedEvent,
-    LoginRemovedEvent,
-    LoginUpdatedEvent,
-)
+from .event import EVENT_CLASSES, Event, MessageEvent, LoginAddedEvent, LoginRemovedEvent, LoginUpdatedEvent
 from .models import (
     Payload,
     LoginStatus,
@@ -91,9 +78,7 @@ class Adapter(BaseAdapter):
 
     @staticmethod
     def payload_to_json(payload: Payload) -> str:
-        return payload.__config__.json_dumps(
-            payload.dict(), default=payload.__json_encoder__
-        )
+        return payload.__config__.json_dumps(payload.dict(), default=payload.__json_encoder__)
 
     async def receive_payload(self, info: ClientInfo, ws: WebSocket) -> Payload:
         payload = parse_raw_as(PayloadType, await ws.receive())
@@ -101,9 +86,7 @@ class Adapter(BaseAdapter):
             self.sequences[info.identity] = payload.body.id
         return payload
 
-    async def _authenticate(
-        self, info: ClientInfo, ws: WebSocket
-    ) -> Optional[Literal[True]]:
+    async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Optional[Literal[True]]:
         """鉴权连接"""
         payload = IdentifyPayload.parse_obj(
             {
@@ -120,8 +103,7 @@ class Adapter(BaseAdapter):
         except Exception as e:
             log(
                 "ERROR",
-                "<r><bg #f8bbd0>Error while sending "
-                + "Identify event</bg #f8bbd0></r>",
+                "<r><bg #f8bbd0>Error while sending " + "Identify event</bg #f8bbd0></r>",
                 e,
             )
             return
@@ -130,8 +112,7 @@ class Adapter(BaseAdapter):
         if not isinstance(resp, ReadyPayload):
             log(
                 "ERROR",
-                "Received unexpected payload while authenticating: "
-                f"{escape_tag(repr(resp))}",
+                "Received unexpected payload while authenticating: " f"{escape_tag(repr(resp))}",
             )
             return
         for login in resp.body.logins:
@@ -174,8 +155,7 @@ class Adapter(BaseAdapter):
                 async with self.websocket(req) as ws:
                     log(
                         "DEBUG",
-                        f"WebSocket Connection to "
-                        f"{escape_tag(str(ws_url))} established",
+                        f"WebSocket Connection to " f"{escape_tag(str(ws_url))} established",
                     )
                     try:
                         if not await self._authenticate(info, ws):
@@ -255,8 +235,7 @@ class Adapter(BaseAdapter):
                     if not (bot := self.bots.get(event.self_id)):
                         log(
                             "WARNING",
-                            f"Received event for unknown bot "
-                            f"{escape_tag(event.self_id)}",
+                            f"Received event for unknown bot " f"{escape_tag(event.self_id)}",
                         )
                         continue
                     if isinstance(event, MessageEvent):

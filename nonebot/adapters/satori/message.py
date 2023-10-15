@@ -87,11 +87,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = (
-                raw["data"]
-                if isinstance(raw["data"], bytes)
-                else raw["data"].getvalue()
-            )
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("image need at least one of url, path and raw")
@@ -114,11 +110,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = (
-                raw["data"]
-                if isinstance(raw["data"], bytes)
-                else raw["data"].getvalue()
-            )
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("audio need at least one of url, path and raw")
@@ -141,11 +133,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = (
-                raw["data"]
-                if isinstance(raw["data"], bytes)
-                else raw["data"].getvalue()
-            )
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("video need at least one of url, path and raw")
@@ -168,11 +156,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = (
-                raw["data"]
-                if isinstance(raw["data"], bytes)
-                else raw["data"].getvalue()
-            )
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("file need at least one of url, path and raw")
@@ -566,20 +550,12 @@ class Message(BaseMessage[MessageSegment]):
         return MessageSegment
 
     @override
-    def __add__(
-        self, other: Union[str, MessageSegment, Iterable[MessageSegment]]
-    ) -> "Message":
-        return super().__add__(
-            MessageSegment.text(other) if isinstance(other, str) else other
-        )
+    def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
+        return super().__add__(MessageSegment.text(other) if isinstance(other, str) else other)
 
     @override
-    def __radd__(
-        self, other: Union[str, MessageSegment, Iterable[MessageSegment]]
-    ) -> "Message":
-        return super().__radd__(
-            MessageSegment.text(other) if isinstance(other, str) else other
-        )
+    def __radd__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
+        return super().__radd__(MessageSegment.text(other) if isinstance(other, str) else other)
 
     @staticmethod
     @override

@@ -328,10 +328,7 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
 class PrivateMessageDeletedEvent(MessageDeletedEvent, PrivateMessageEvent):
     @override
     def get_event_description(self) -> str:
-        return escape_tag(
-            f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id}) deleted"
-        )
+        return escape_tag(f"Message {self.msg_id} from " f"{self.user.name or ''}({self.channel.id}) deleted")
 
 
 class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
@@ -397,9 +394,7 @@ class ReactionAddedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(
-            f"Reaction added to {self.msg_id} by {self.user.name}({self.channel.id})"
-        )
+        return escape_tag(f"Reaction added to {self.msg_id} by {self.user.name}({self.channel.id})")
 
 
 @register_event_class
