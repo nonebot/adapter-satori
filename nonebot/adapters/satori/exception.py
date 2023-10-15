@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 from nonebot.drivers import Response
@@ -16,26 +15,16 @@ class SatoriAdapterException(AdapterException):
 class ActionFailed(BaseActionFailed, SatoriAdapterException):
     def __init__(self, response: Response):
         self.status_code: int = response.status_code
-        self.code: Optional[int] = None
-        self.message: Optional[str] = None
-        self.data: Optional[dict] = None
-        if response.content:
-            body = json.loads(response.content)
-            self._prepare_body(body)
+        self.headers = response.headers
+        self.content = response.content
 
     def __repr__(self) -> str:
         return (
-            f"<ActionFailed: {self.status_code}, code={self.code}, "
-            f"message={self.message}, data={self.data}>"
+            f"<{self.__class__.__name__}: {self.status_code}, headers={self.headers}, content={self.content}>"
         )
 
     def __str__(self):
         return self.__repr__()
-
-    def _prepare_body(self, body: dict):
-        self.code = body.get("code")
-        self.message = body.get("message")
-        self.data = body.get("data")
 
 
 class BadRequestException(ActionFailed):
