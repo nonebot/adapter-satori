@@ -147,7 +147,7 @@ class Adapter(BaseAdapter):
             await asyncio.sleep(9)
 
     async def ws(self, info: ClientInfo) -> None:
-        ws_url = f"ws://{info.host}:{info.port}/v1/events"
+        ws_url = info.ws_base / "events"
         req = Request("GET", ws_url, timeout=60.0)
         heartbeat_task: Optional["asyncio.Task"] = None
         while True:

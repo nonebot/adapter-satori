@@ -219,7 +219,7 @@ class Bot(BaseBot):
         self,
         channel_id: str,
         message: Union[str, Message, MessageSegment],
-    ):
+    ) -> List[SatoriMessage]:
         """发送消息
 
         参数:
@@ -227,6 +227,20 @@ class Bot(BaseBot):
             message: 要发送的消息
         """
         return await self.message_create(channel_id=channel_id, content=str(message))
+
+    async def send_private_message(
+        self,
+        user_id: str,
+        message: Union[str, Message, MessageSegment],
+    ) -> List[SatoriMessage]:
+        """发送私聊消息
+
+        参数:
+            user_id: 要发送的用户 ID
+            message: 要发送的消息
+        """
+        channel = await self.user_channel_create(user_id=user_id)
+        return await self.message_create(channel_id=channel.id, message=message)
 
     async def update_message(
         self,
@@ -241,7 +255,7 @@ class Bot(BaseBot):
             message_id: 要更新的消息 ID
             message: 要更新的消息
         """
-        return await self.message_update(channel_id=channel_id, message_id=message_id, content=str(message))
+        await self.message_update(channel_id=channel_id, message_id=message_id, content=str(message))
 
     @API
     async def message_create(
@@ -249,7 +263,7 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         content: str,
-    ):
+    ) -> List[SatoriMessage]:
         request = Request(
             "POST",
             self.info.api_base / "message.create",
@@ -259,7 +273,7 @@ class Bot(BaseBot):
         return [SatoriMessage.parse_obj(i) for i in res]
 
     @API
-    async def message_get(self, *, channel_id: str, message_id: str):
+    async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:
         request = Request(
             "POST",
             self.info.api_base / "message.get",
@@ -269,7 +283,7 @@ class Bot(BaseBot):
         return SatoriMessage.parse_obj(res)
 
     @API
-    async def message_delete(self, *, channel_id: str, message_id: str):
+    async def message_delete(self, *, channel_id: str, message_id: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "message.delete",
@@ -284,7 +298,7 @@ class Bot(BaseBot):
         channel_id: str,
         message_id: str,
         content: str,
-    ):
+    ) -> None:
         request = Request(
             "POST",
             self.info.api_base / "message.update",
@@ -297,7 +311,9 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def message_list(self, *, channel_id: str, next_token: Optional[str] = None):
+    async def message_list(
+        self, *, channel_id: str, next_token: Optional[str] = None
+    ) -> PageResult[SatoriMessage]:
         request = Request(
             "POST",
             self.info.api_base / "message.list",
@@ -306,7 +322,7 @@ class Bot(BaseBot):
         return PageResult[SatoriMessage].parse_obj(await self._request(request))
 
     @API
-    async def channel_get(self, *, channel_id: str):
+    async def channel_get(self, *, channel_id: str) -> Channel:
         request = Request(
             "POST",
             self.info.api_base / "channel.get",
@@ -316,7 +332,7 @@ class Bot(BaseBot):
         return Channel.parse_obj(res)
 
     @API
-    async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None):
+    async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Channel]:
         request = Request(
             "POST",
             self.info.api_base / "channel.list",
@@ -325,7 +341,7 @@ class Bot(BaseBot):
         return PageResult[Channel].parse_obj(await self._request(request))
 
     @API
-    async def channel_create(self, *, guild_id: str, data: Channel):
+    async def channel_create(self, *, guild_id: str, data: Channel) -> Channel:
         request = Request(
             "POST",
             self.info.api_base / "channel.create",
@@ -339,7 +355,7 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         data: Channel,
-    ):
+    ) -> None:
         request = Request(
             "POST",
             self.info.api_base / "channel.update",
@@ -348,7 +364,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def channel_delete(self, *, channel_id: str):
+    async def channel_delete(self, *, channel_id: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "channel.delete",
@@ -357,7 +373,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def user_channel_create(self, *, user_id: str):
+    async def user_channel_create(self, *, user_id: str) -> Channel:
         request = Request(
             "POST",
             self.info.api_base / "user.channel.create",
@@ -366,7 +382,7 @@ class Bot(BaseBot):
         return Channel.parse_obj(await self._request(request))
 
     @API
-    async def guild_get(self, *, guild_id: str):
+    async def guild_get(self, *, guild_id: str) -> Guild:
         request = Request(
             "POST",
             self.info.api_base / "guild.get",
@@ -375,7 +391,7 @@ class Bot(BaseBot):
         return Guild.parse_obj(await self._request(request))
 
     @API
-    async def guild_list(self, *, next_token: Optional[str] = None):
+    async def guild_list(self, *, next_token: Optional[str] = None) -> PageResult[Guild]:
         request = Request(
             "POST",
             self.info.api_base / "guild.list",
@@ -384,7 +400,7 @@ class Bot(BaseBot):
         return PageResult[Guild].parse_obj(await self._request(request))
 
     @API
-    async def guild_approve(self, *, request_id: str, approve: bool, comment: str):
+    async def guild_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.approve",
@@ -393,7 +409,9 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_list(self, *, guild_id: str, next_token: Optional[str] = None):
+    async def guild_member_list(
+        self, *, guild_id: str, next_token: Optional[str] = None
+    ) -> PageResult[OuterMember]:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.list",
@@ -402,7 +420,7 @@ class Bot(BaseBot):
         return PageResult[OuterMember].parse_obj(await self._request(request))
 
     @API
-    async def guild_member_get(self, *, guild_id: str, user_id: str):
+    async def guild_member_get(self, *, guild_id: str, user_id: str) -> OuterMember:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.get",
@@ -411,7 +429,7 @@ class Bot(BaseBot):
         return OuterMember.parse_obj(await self._request(request))
 
     @API
-    async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False):
+    async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.kick",
@@ -420,7 +438,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_approve(self, *, request_id: str, approve: bool, comment: str):
+    async def guild_member_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.approve",
@@ -429,7 +447,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_role_set(self, *, guild_id: str, user_id: str, role_id: str):
+    async def guild_member_role_set(self, *, guild_id: str, user_id: str, role_id: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.role.set",
@@ -438,7 +456,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_role_unset(self, *, guild_id: str, user_id: str, role_id: str):
+    async def guild_member_role_unset(self, *, guild_id: str, user_id: str, role_id: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.role.unset",
@@ -447,7 +465,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_role_list(self, guild_id: str, next_token: Optional[str] = None):
+    async def guild_role_list(self, guild_id: str, next_token: Optional[str] = None) -> PageResult[Role]:
         request = Request(
             "POST",
             self.info.api_base / "guild.role.list",
@@ -461,7 +479,7 @@ class Bot(BaseBot):
         *,
         guild_id: str,
         role: Role,
-    ):
+    ) -> Role:
         request = Request(
             "POST",
             self.info.api_base / "guild.role.create",
@@ -476,7 +494,7 @@ class Bot(BaseBot):
         guild_id: str,
         role_id: str,
         role: Role,
-    ):
+    ) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.role.update",
@@ -485,7 +503,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_role_delete(self, *, guild_id: str, role_id: str):
+    async def guild_role_delete(self, *, guild_id: str, role_id: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "guild.role.delete",
@@ -500,7 +518,7 @@ class Bot(BaseBot):
         channel_id: str,
         message_id: str,
         emoji: str,
-    ):
+    ) -> None:
         request = Request(
             "POST",
             self.info.api_base / "reaction.create",
@@ -516,7 +534,7 @@ class Bot(BaseBot):
         message_id: str,
         emoji: str,
         user_id: Optional[str] = None,
-    ):
+    ) -> None:
         data = {"channel_id": channel_id, "message_id": message_id, "emoji": emoji}
         if user_id is not None:
             data["user_id"] = user_id
@@ -534,7 +552,7 @@ class Bot(BaseBot):
         channel_id: str,
         message_id: str,
         emoji: Optional[str] = None,
-    ):
+    ) -> None:
         data = {"channel_id": channel_id, "message_id": message_id}
         if emoji is not None:
             data["emoji"] = emoji
@@ -553,7 +571,7 @@ class Bot(BaseBot):
         message_id: str,
         emoji: str,
         next_token: Optional[str] = None,
-    ):
+    ) -> PageResult[User]:
         request = Request(
             "POST",
             self.info.api_base / "reaction.list",
@@ -567,7 +585,7 @@ class Bot(BaseBot):
         return PageResult[User].parse_obj(await self._request(request))
 
     @API
-    async def login_get(self):
+    async def login_get(self) -> Login:
         request = Request(
             "POST",
             self.info.api_base / "login.get",
@@ -575,7 +593,7 @@ class Bot(BaseBot):
         return Login.parse_obj(await self._request(request))
 
     @API
-    async def user_get(self, *, user_id: str):
+    async def user_get(self, *, user_id: str) -> User:
         request = Request(
             "POST",
             self.info.api_base / "user.get",
@@ -584,7 +602,7 @@ class Bot(BaseBot):
         return User.parse_obj(await self._request(request))
 
     @API
-    async def friend_list(self, *, next_token: Optional[str] = None):
+    async def friend_list(self, *, next_token: Optional[str] = None) -> PageResult[User]:
         request = Request(
             "POST",
             self.info.api_base / "friend.list",
@@ -593,7 +611,7 @@ class Bot(BaseBot):
         return PageResult[User].parse_obj(await self._request(request))
 
     @API
-    async def friend_approve(self, *, request_id: str, approve: bool, comment: str):
+    async def friend_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
         request = Request(
             "POST",
             self.info.api_base / "friend.approve",
@@ -607,7 +625,7 @@ class Bot(BaseBot):
         *,
         action: str,
         **kwargs,
-    ):
+    ) -> Any:
         request = Request(
             "POST",
             self.info.api_base / "internal" / action,
