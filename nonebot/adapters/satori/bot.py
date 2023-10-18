@@ -240,7 +240,7 @@ class Bot(BaseBot):
             message: 要发送的消息
         """
         channel = await self.user_channel_create(user_id=user_id)
-        return await self.message_create(channel_id=channel.id, message=message)
+        return await self.message_create(channel_id=channel.id, content=message)
 
     async def update_message(
         self,

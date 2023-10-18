@@ -10,11 +10,10 @@ _✨ NoneBot2 Satori Protocol适配器 / Satori Protocol Adapter for NoneBot2 �
 
 [Satori Protocol](https://satori.js.org/zh-CN/)
 
-## 协议端
+### 协议端
 
 目前提供了 `satori` 协议实现的有：
 - [Chronocat](https://chronocat.vercel.app)
-- Satori
 - Koishi （搭配 `@koishijs/plugin-server`）
 
 ## 配置
