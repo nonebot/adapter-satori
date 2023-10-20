@@ -373,11 +373,14 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def user_channel_create(self, *, user_id: str) -> Channel:
+    async def user_channel_create(self, *, user_id: str, guild_id: Optional[str] = None) -> Channel:
+        data = {"user_id": user_id}
+        if guild_id is not None:
+            data["guild_id"] = guild_id
         request = Request(
             "POST",
             self.info.api_base / "user.channel.create",
-            json={"user_id": user_id},
+            json=data,
         )
         return Channel.parse_obj(await self._request(request))
 
