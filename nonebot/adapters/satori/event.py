@@ -131,8 +131,7 @@ class GuildUpdatedEvent(GuildEvent):
     __type__ = EventType.GUILD_UPDATED
 
 
-class GuildInnerMemberEvent(GuildEvent):
-    member: InnerMember
+class GuildMemberEvent(GuildEvent):
     user: User
 
     @override
@@ -145,23 +144,27 @@ class GuildInnerMemberEvent(GuildEvent):
 
 
 @register_event_class
-class GuildInnerMemberAddedEvent(GuildInnerMemberEvent):
+class GuildMemberAddedEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_ADDED
 
 
 @register_event_class
-class GuildInnerMemberRemovedEvent(GuildInnerMemberEvent):
+class GuildMemberRemovedEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_REMOVED
 
 
 @register_event_class
-class GuildInnerMemberRequestEvent(GuildInnerMemberEvent):
+class GuildMemberRequestEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_REQUEST
+
+    member: InnerMember
 
 
 @register_event_class
-class GuildInnerMemberUpdatedEvent(GuildInnerMemberEvent):
+class GuildMemberUpdatedEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_UPDATED
+
+    member: InnerMember
 
 
 class GuildRoleEvent(GuildEvent):

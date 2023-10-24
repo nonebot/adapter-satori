@@ -31,6 +31,7 @@ class Guild(BaseModel, extra=Extra.allow):
 class User(BaseModel, extra=Extra.allow):
     id: str
     name: Optional[str] = None
+    nick: Optional[str] = None
     avatar: Optional[str] = None
     is_bot: Optional[bool] = None
 
@@ -38,6 +39,7 @@ class User(BaseModel, extra=Extra.allow):
 class InnerMember(BaseModel, extra=Extra.allow):
     user: Optional[User] = None
     name: Optional[str] = None
+    nick: Optional[str] = None
     avatar: Optional[str] = None
     joined_at: Optional[datetime] = None
 
