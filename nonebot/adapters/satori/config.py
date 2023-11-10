@@ -6,8 +6,13 @@ from pydantic import Extra, Field, BaseModel
 
 class ClientInfo(BaseModel):
     host: str = "localhost"
+    """服务端的地址"""
     port: int
+    """服务端的端口"""
+    path: str = ""
+    """服务端的自定义路径"""
     token: Optional[str] = None
+    """服务端的 token"""
 
     @property
     def identity(self):
@@ -15,11 +20,11 @@ class ClientInfo(BaseModel):
 
     @property
     def api_base(self):
-        return URL(f"http://{self.host}:{self.port}") / "v1"
+        return URL(f"http://{self.host}:{self.port}") / self.path / "v1"
 
     @property
     def ws_base(self):
-        return URL(f"ws://{self.host}:{self.port}") / "v1"
+        return URL(f"ws://{self.host}:{self.port}") / self.path / "v1"
 
 
 class Config(BaseModel, extra=Extra.ignore):

@@ -41,6 +41,7 @@ SATORI_CLIENTS='
   {
     "host": "localhost",
     "port": "5500",
+    "path": "",
     "token": "xxx"
   }
 ]
@@ -48,6 +49,8 @@ SATORI_CLIENTS='
 ```
 
 `host` 与 `port` 为 Satori 服务端的监听地址与端口，
+
+`path` 为 Satori 服务端自定义的监听路径，如 `"/satori"`，默认为 `""`
 
 `token` 由 Satori 服务端决定是否需要。
 
