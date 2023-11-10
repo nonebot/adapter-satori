@@ -38,6 +38,7 @@ class EventType(str, Enum):
     MESSAGE_UPDATED = "message-updated"
     REACTION_ADDED = "reaction-added"
     REACTION_REMOVED = "reaction-removed"
+    INTERNAL = "internal"
 
 
 class Event(BaseEvent, SatoriEvent):
@@ -61,10 +62,16 @@ class Event(BaseEvent, SatoriEvent):
 
     @override
     def get_user_id(self) -> str:
+        if self.user:
+            return self.user.id
         raise ValueError("Event has no context!")
 
     @override
     def get_session_id(self) -> str:
+        if self.channel:
+            if self.guild:
+                return f"{self.guild.id}/{self.channel.id}"
+            return self.channel.id
         raise ValueError("Event has no context!")
 
     @override
@@ -407,3 +414,12 @@ class ReactionRemovedEvent(ReactionEvent):
     @override
     def get_event_description(self) -> str:
         return escape_tag(f"Reaction removed from {self.msg_id}")
+
+
+@register_event_class
+class InternalEvent(Event):
+    __type__ = EventType.INTERNAL
+
+    @override
+    def get_event_name(self) -> str:
+        return getattr(self, "_type", "internal")

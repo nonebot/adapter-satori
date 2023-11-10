@@ -179,10 +179,7 @@ class InnerMessage(BaseModel, extra=Extra.allow):
 class OuterMessage(InnerMessage):
     channel: Channel
     guild: Guild
-    member: InnerMember
     user: User
-    created_at: datetime
-    updated_at: datetime
 
 
 class Event(BaseModel, extra=Extra.allow):

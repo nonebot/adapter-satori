@@ -1,7 +1,7 @@
 from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
-from dataclasses import field, dataclass
+from dataclasses import InitVar, field, dataclass
 from typing_extensions import NotRequired, override
 from typing import Any, List, Type, Union, Iterable, Optional, TypedDict
 
@@ -28,7 +28,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
             return f'{key}="{escape(str(value))}"'
 
         attrs = " ".join(_attr(k, v) for k, v in self.data.items())
-        return f"<{self.type} {attrs} />"
+        attrs = f" {attrs}" if attrs else ""
+        return f"<{self.type}{attrs}/>"
 
     @classmethod
     @override
@@ -71,7 +72,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Sharp("sharp", data)
 
     @staticmethod
-    def link(href: str) -> "Link":
+    def link(href: str, display: Optional[str] = None) -> "Link":
+        if display:
+            return Link("link", {"text": href, "display": display})
         return Link("link", {"text": href})
 
     @staticmethod
@@ -79,6 +82,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
         raw: Optional[RawData] = None,
+        extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
     ) -> "Image":
@@ -95,13 +99,14 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["cache"] = cache
         if timeout is not None:
             data["timeout"] = timeout
-        return Image("img", data)
+        return Image("img", data, extra=extra)
 
     @staticmethod
     def audio(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
         raw: Optional[RawData] = None,
+        extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
     ) -> "Audio":
@@ -118,13 +123,14 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["cache"] = cache
         if timeout is not None:
             data["timeout"] = timeout
-        return Audio("audio", data)
+        return Audio("audio", data, extra=extra)
 
     @staticmethod
     def video(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
         raw: Optional[RawData] = None,
+        extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
     ) -> "Video":
@@ -141,13 +147,14 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["cache"] = cache
         if timeout is not None:
             data["timeout"] = timeout
-        return Video("video", data)
+        return Video("video", data, extra=extra)
 
     @staticmethod
     def file(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
         raw: Optional[RawData] = None,
+        extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
     ) -> "File":
@@ -164,7 +171,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["cache"] = cache
         if timeout is not None:
             data["timeout"] = timeout
-        return File("file", data)
+        return File("file", data, extra=extra)
 
     @staticmethod
     def bold(text: str) -> "Bold":
@@ -291,12 +298,19 @@ class Sharp(MessageSegment):
     data: SharpData = field(default_factory=dict)
 
 
+class LinkData(TypedDict):
+    text: str
+    display: NotRequired[str]
+
+
 @dataclass
 class Link(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: LinkData = field(default_factory=dict)
 
     @override
     def __str__(self):
+        if "display" in self.data:
+            return f'<a href="{escape(self.data["text"])}">{escape(self.data["display"])}</a>'
         return f'<a href="{escape(self.data["text"])}"/>'
 
     @override
@@ -315,6 +329,11 @@ class ImageData(TypedDict):
 @dataclass
 class Image(MessageSegment):
     data: ImageData = field(default_factory=dict)
+    extra: InitVar[Optional[dict]] = None
+
+    def __post_init__(self, extra: Optional[dict]):
+        if extra:
+            self.data.update(extra)
 
 
 class AudioData(TypedDict):
@@ -326,6 +345,11 @@ class AudioData(TypedDict):
 @dataclass
 class Audio(MessageSegment):
     data: AudioData = field(default_factory=dict)
+    extra: InitVar[Optional[dict]] = None
+
+    def __post_init__(self, extra: Optional[dict]):
+        if extra:
+            self.data.update(extra)
 
 
 class VideoData(TypedDict):
@@ -337,6 +361,11 @@ class VideoData(TypedDict):
 @dataclass
 class Video(MessageSegment):
     data: VideoData = field(default_factory=dict)
+    extra: InitVar[Optional[dict]] = None
+
+    def __post_init__(self, extra: Optional[dict]):
+        if extra:
+            self.data.update(extra)
 
 
 class FileData(TypedDict):
@@ -348,6 +377,11 @@ class FileData(TypedDict):
 @dataclass
 class File(MessageSegment):
     data: FileData = field(default_factory=dict)
+    extra: InitVar[Optional[dict]] = None
+
+    def __post_init__(self, extra: Optional[dict]):
+        if extra:
+            self.data.update(extra)
 
 
 @dataclass
@@ -570,7 +604,12 @@ class Message(BaseMessage[MessageSegment]):
                 seg_cls, seg_type = ELEMENT_TYPE_MAP[elem.type]
                 msg.append(seg_cls(seg_type, elem.attrs.copy()))
             elif elem.type in ("a", "link"):
-                msg.append(Link("link", {"text": elem.attrs["href"]}))
+                if elem.children:
+                    msg.append(
+                        Link("link", {"text": elem.attrs["href"], "display": elem.children[0].attrs["text"]})
+                    )
+                else:
+                    msg.append(Link("link", {"text": elem.attrs["href"]}))
             elif elem.type in STYLE_TYPE_MAP:
                 seg_cls, seg_type = STYLE_TYPE_MAP[elem.type]
                 msg.append(seg_cls(seg_type, {"text": elem.children[0].attrs["text"]}))
