@@ -14,7 +14,15 @@ from .utils import API, log
 from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
 from .models import Event as SatoriEvent
-from .event import EVENT_CLASSES, Event, MessageEvent, LoginAddedEvent, LoginRemovedEvent, LoginUpdatedEvent
+from .event import (
+    EVENT_CLASSES,
+    Event,
+    MessageEvent,
+    LoginAddedEvent,
+    InteractionEvent,
+    LoginRemovedEvent,
+    LoginUpdatedEvent,
+)
 from .models import (
     Payload,
     LoginStatus,
@@ -238,7 +246,7 @@ class Adapter(BaseAdapter):
                             f"Received event for unknown bot " f"{escape_tag(event.self_id)}",
                         )
                         continue
-                    if isinstance(event, MessageEvent):
+                    if isinstance(event, (MessageEvent, InteractionEvent)):
                         event = event.convert()
                     asyncio.create_task(bot.handle_event(event))
             elif isinstance(payload, PongPayload):

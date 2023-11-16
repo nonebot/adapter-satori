@@ -81,6 +81,16 @@ class Login(BaseModel, extra=Extra.allow):
     status: LoginStatus
 
 
+class ArgvInteraction(BaseModel):
+    name: str
+    arguments: list
+    options: Any
+
+
+class ButtonInteraction(BaseModel):
+    id: str
+
+
 class Opcode(IntEnum):
     EVENT = 0
     PING = 1
@@ -188,6 +198,8 @@ class Event(BaseModel, extra=Extra.allow):
     platform: str
     self_id: str
     timestamp: datetime
+    argv: Optional[ArgvInteraction] = None
+    button: Optional[ButtonInteraction] = None
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
     login: Optional[Login] = None

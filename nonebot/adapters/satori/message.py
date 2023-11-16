@@ -254,6 +254,33 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["avatar"] = avatar
         return Author("author", data)
 
+    @staticmethod
+    def action_button(button_id: str, display: Optional[str] = None, theme: Optional[str] = None):
+        data = {"type": "action", "id": button_id}
+        if display:
+            data["display"] = display
+        if theme:
+            data["theme"] = theme
+        return Button("button", data)
+
+    @staticmethod
+    def link_button(url: str, display: Optional[str] = None, theme: Optional[str] = None):
+        data = {"type": "link", "href": url}
+        if display:
+            data["display"] = display
+        if theme:
+            data["theme"] = theme
+        return Button("button", data)
+
+    @staticmethod
+    def input_button(text: str, display: Optional[str] = None, theme: Optional[str] = None):
+        data = {"type": "input", "text": text}
+        if display:
+            data["display"] = display
+        if theme:
+            data["theme"] = theme
+        return Button("button", data)
+
     @override
     def is_text(self) -> bool:
         return False
@@ -548,6 +575,35 @@ class Author(MessageSegment):
     data: AuthorData = field(default_factory=dict)
 
 
+class ButtonData(TypedDict, total=False):
+    type: str
+    display: NotRequired[str]
+    id: NotRequired[str]
+    href: NotRequired[str]
+    text: NotRequired[str]
+    theme: NotRequired[str]
+
+
+@dataclass
+class Button(MessageSegment):
+    data: ButtonData = field(default_factory=dict)
+
+    @override
+    def __str__(self):
+        attr = [f'type="{escape(self.data["type"])}"']
+        if self.data["type"] == "action":
+            attr.append(f'id="{escape(self.data["id"])}"')
+        if self.data["type"] == "link":
+            attr.append(f'href="{escape(self.data["href"])}"')
+        if self.data["type"] == "input":
+            attr.append(f'text="{escape(self.data["text"])}"')
+        if "theme":
+            attr.append(f'theme="{escape(self.data["theme"])}"')
+        if "display" in self.data:
+            return f'<button {" ".join(attr)}>{escape(self.data["display"])}</button>'
+        return f'<button {" ".join(attr)} />'
+
+
 ELEMENT_TYPE_MAP = {
     "text": (Text, "text"),
     "at": (At, "at"),
@@ -610,6 +666,11 @@ class Message(BaseMessage[MessageSegment]):
                     )
                 else:
                     msg.append(Link("link", {"text": elem.attrs["href"]}))
+            elif elem.type == "button":
+                if elem.children:
+                    msg.append(Button("button", {"display": elem.children[0].attrs["text"], **elem.attrs}))
+                else:
+                    msg.append(Button("button", {**elem.attrs}))
             elif elem.type in STYLE_TYPE_MAP:
                 seg_cls, seg_type = STYLE_TYPE_MAP[elem.type]
                 msg.append(seg_cls(seg_type, {"text": elem.children[0].attrs["text"]}))

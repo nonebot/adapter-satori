@@ -12,6 +12,7 @@ from .models import Role, User
 from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import InnerMessage as SatoriMessage
+from .models import ArgvInteraction, ButtonInteraction
 from .models import Guild, Login, Channel, ChannelType, InnerMember
 
 E = TypeVar("E", bound="Event")
@@ -39,6 +40,8 @@ class EventType(str, Enum):
     REACTION_ADDED = "reaction-added"
     REACTION_REMOVED = "reaction-removed"
     INTERNAL = "internal"
+    INTERACTION_BUTTON = "interaction/button"
+    INTERACTION_COMMAND = "interaction/command"
 
 
 class Event(BaseEvent, SatoriEvent):
@@ -423,3 +426,184 @@ class InternalEvent(Event):
     @override
     def get_event_name(self) -> str:
         return getattr(self, "_type", "internal")
+
+
+class InteractionEvent(NoticeEvent):
+    def convert(self) -> "InteractionEvent":
+        raise NotImplementedError
+
+    @override
+    def is_tome(self) -> bool:
+        return True
+
+
+@register_event_class
+class InteractionButtonEvent(InteractionEvent):
+    __type__ = EventType.INTERACTION_BUTTON
+
+    button: ButtonInteraction
+
+    @override
+    def get_event_description(self) -> str:
+        return escape_tag(f"Button interacted with button#{self.button.id}")
+
+    def convert(self):
+        if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
+            return PublicInteractionButtonEvent.parse_obj(self)
+        if self.user:
+            return PrivateInteractionButtonEvent.parse_obj(self)
+        return self
+
+
+class PrivateInteractionButtonEvent(InteractionButtonEvent):
+    user: User
+
+    @override
+    def get_session_id(self) -> str:
+        return self.channel.id if self.channel else self.user.id
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
+
+
+class PublicInteractionButtonEvent(InteractionButtonEvent):
+    user: User
+    channel: Channel
+
+    @override
+    def get_session_id(self) -> str:
+        s = f"{self.channel.id}/{self.user.id}"
+        if self.guild:
+            s = f"{self.guild.id}/{s}"
+        return s
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
+
+
+@register_event_class
+class InteractionCommandEvent(InteractionEvent):
+    __type__ = EventType.INTERACTION_COMMAND
+
+    if TYPE_CHECKING:
+        _message: Message
+        original_message: Message
+
+    @override
+    def get_type(self) -> str:
+        return "message"
+
+    @override
+    def get_message(self) -> Message:
+        return self._message
+
+    def convert(self):
+        if self.argv:
+            return InteractionCommandArgvEvent.convert(self)  # type: ignore
+        return InteractionCommandMessageEvent.convert(self)  # type: ignore
+
+
+class InteractionCommandArgvEvent(InteractionCommandEvent):
+    argv: ArgvInteraction
+
+    @override
+    def get_event_description(self) -> str:
+        return escape_tag(f"Command interacted with {self.argv}")
+
+    @root_validator
+    def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        argv: ArgvInteraction = values["argv"]
+        cmd = argv.name
+        if argv.arguments:
+            cmd += " ".join(argv.arguments)
+        values["_message"] = Message(cmd)
+        values["original_message"] = deepcopy(values["_message"])
+        return values
+
+    def convert(self):
+        if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
+            return PublicInteractionCommandArgvEvent.parse_obj(self)
+        if self.user:
+            return PrivateInteractionCommandArgvEvent.parse_obj(self)
+        return self
+
+
+class PrivateInteractionCommandArgvEvent(InteractionCommandArgvEvent):
+    user: User
+
+    @override
+    def get_session_id(self) -> str:
+        return self.channel.id if self.channel else self.user.id
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
+
+
+class PublicInteractionCommandArgvEvent(InteractionCommandArgvEvent):
+    user: User
+    channel: Channel
+
+    @override
+    def get_session_id(self) -> str:
+        s = f"{self.channel.id}/{self.user.id}"
+        if self.guild:
+            s = f"{self.guild.id}/{s}"
+        return s
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
+
+
+class InteractionCommandMessageEvent(InteractionCommandEvent):
+    message: SatoriMessage
+    to_me: bool = False
+    reply: Optional[RenderMessage] = None
+
+    @root_validator
+    def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        values["_message"] = Message.from_satori_element(values["message"].content)
+        values["original_message"] = deepcopy(values["_message"])
+        return values
+
+    @override
+    def get_event_description(self) -> str:
+        return escape_tag(f"Command interacted with {self.get_message()}")
+
+    def convert(self):
+        if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
+            return PublicInteractionCommandMessageEvent.parse_obj(self)
+        if self.user:
+            return PrivateInteractionCommandMessageEvent.parse_obj(self)
+        return self
+
+
+class PrivateInteractionCommandMessageEvent(InteractionCommandMessageEvent):
+    user: User
+
+    @override
+    def get_session_id(self) -> str:
+        return self.channel.id if self.channel else self.user.id
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
+
+
+class PublicInteractionCommandMessageEvent(InteractionCommandMessageEvent):
+    user: User
+    channel: Channel
+
+    @override
+    def get_session_id(self) -> str:
+        s = f"{self.channel.id}/{self.user.id}"
+        if self.guild:
+            s = f"{self.guild.id}/{s}"
+        return s
+
+    @override
+    def get_user_id(self) -> str:
+        return self.user.id
