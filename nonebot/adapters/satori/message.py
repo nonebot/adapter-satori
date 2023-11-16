@@ -597,7 +597,7 @@ class Button(MessageSegment):
             attr.append(f'href="{escape(self.data["href"])}"')
         if self.data["type"] == "input":
             attr.append(f'text="{escape(self.data["text"])}"')
-        if "theme":
+        if "theme" in self.data:
             attr.append(f'theme="{escape(self.data["theme"])}"')
         if "display" in self.data:
             return f'<button {" ".join(attr)}>{escape(self.data["display"])}</button>'
