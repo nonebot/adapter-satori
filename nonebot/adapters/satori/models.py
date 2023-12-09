@@ -81,6 +81,12 @@ class Login(BaseModel, extra=Extra.allow):
     status: LoginStatus
 
 
+class OuterLogin(Login):
+    user: User
+    self_id: str
+    platform: str
+
+
 class ArgvInteraction(BaseModel):
     name: str
     arguments: list
@@ -110,7 +116,7 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: List[Login]
+    logins: List[OuterLogin]
 
 
 class IdentifyPayload(Payload):

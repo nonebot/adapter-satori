@@ -48,7 +48,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         data = {"id": user_id}
         if name:
             data["name"] = name
-        return At("at", data)
+        return At("at", data)  # type: ignore
 
     @staticmethod
     def at_role(
@@ -58,7 +58,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         data = {"role": role}
         if name:
             data["name"] = name
-        return At("at_role", data)
+        return At("at_role", data)  # type: ignore
 
     @staticmethod
     def at_all(here: bool = False) -> "At":
@@ -69,7 +69,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         data = {"id": channel_id}
         if name:
             data["name"] = name
-        return Sharp("sharp", data)
+        return Sharp("sharp", data)  # type: ignore
 
     @staticmethod
     def link(href: str, display: Optional[str] = None) -> "Link":
@@ -91,15 +91,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("image need at least one of url, path and raw")
         if cache is not None:
-            data["cache"] = cache
+            data["cache"] = cache  # type: ignore
         if timeout is not None:
             data["timeout"] = timeout
-        return Image("img", data, extra=extra)
+        return Image("img", data, extra=extra)  # type: ignore
 
     @staticmethod
     def audio(
@@ -115,15 +115,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("audio need at least one of url, path and raw")
         if cache is not None:
-            data["cache"] = cache
+            data["cache"] = cache  # type: ignore
         if timeout is not None:
             data["timeout"] = timeout
-        return Audio("audio", data, extra=extra)
+        return Audio("audio", data, extra=extra)  # type: ignore
 
     @staticmethod
     def video(
@@ -139,15 +139,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("video need at least one of url, path and raw")
         if cache is not None:
-            data["cache"] = cache
+            data["cache"] = cache  # type: ignore
         if timeout is not None:
             data["timeout"] = timeout
-        return Video("video", data, extra=extra)
+        return Video("video", data, extra=extra)  # type: ignore
 
     @staticmethod
     def file(
@@ -163,15 +163,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).as_uri()}
         elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()
+            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("file need at least one of url, path and raw")
         if cache is not None:
-            data["cache"] = cache
+            data["cache"] = cache  # type: ignore
         if timeout is not None:
             data["timeout"] = timeout
-        return File("file", data, extra=extra)
+        return File("file", data, extra=extra)  # type: ignore
 
     @staticmethod
     def bold(text: str) -> "Bold":
@@ -226,7 +226,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["forward"] = forward
         if content:
             data["content"] = content
-        return RenderMessage("message", data)
+        return RenderMessage("message", data)  # type: ignore
 
     @staticmethod
     def quote(
@@ -236,10 +236,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     ) -> "RenderMessage":
         data = {"id": mid}
         if forward is not None:
-            data["forward"] = forward
+            data["forward"] = forward  # type: ignore
         if content:
-            data["content"] = content
-        return RenderMessage("quote", data)
+            data["content"] = content  # type: ignore
+        return RenderMessage("quote", data)  # type: ignore
 
     @staticmethod
     def author(
@@ -252,7 +252,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["nickname"] = nickname
         if avatar:
             data["avatar"] = avatar
-        return Author("author", data)
+        return Author("author", data)  # type: ignore
 
     @staticmethod
     def action_button(button_id: str, display: Optional[str] = None, theme: Optional[str] = None):
@@ -261,7 +261,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["display"] = display
         if theme:
             data["theme"] = theme
-        return Button("button", data)
+        return Button("button", data)  # type: ignore
 
     @staticmethod
     def link_button(url: str, display: Optional[str] = None, theme: Optional[str] = None):
@@ -270,7 +270,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["display"] = display
         if theme:
             data["theme"] = theme
-        return Button("button", data)
+        return Button("button", data)  # type: ignore
 
     @staticmethod
     def input_button(text: str, display: Optional[str] = None, theme: Optional[str] = None):
@@ -279,7 +279,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["display"] = display
         if theme:
             data["theme"] = theme
-        return Button("button", data)
+        return Button("button", data)  # type: ignore
 
     @override
     def is_text(self) -> bool:
@@ -292,7 +292,7 @@ class TextData(TypedDict):
 
 @dataclass
 class Text(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self) -> str:
@@ -312,7 +312,7 @@ class AtData(TypedDict):
 
 @dataclass
 class At(MessageSegment):
-    data: AtData = field(default_factory=dict)
+    data: AtData = field(default_factory=dict)  # type: ignore
 
 
 class SharpData(TypedDict):
@@ -322,7 +322,7 @@ class SharpData(TypedDict):
 
 @dataclass
 class Sharp(MessageSegment):
-    data: SharpData = field(default_factory=dict)
+    data: SharpData = field(default_factory=dict)  # type: ignore
 
 
 class LinkData(TypedDict):
@@ -332,7 +332,7 @@ class LinkData(TypedDict):
 
 @dataclass
 class Link(MessageSegment):
-    data: LinkData = field(default_factory=dict)
+    data: LinkData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -355,12 +355,12 @@ class ImageData(TypedDict):
 
 @dataclass
 class Image(MessageSegment):
-    data: ImageData = field(default_factory=dict)
+    data: ImageData = field(default_factory=dict)  # type: ignore
     extra: InitVar[Optional[dict]] = None
 
     def __post_init__(self, extra: Optional[dict]):
         if extra:
-            self.data.update(extra)
+            self.data.update(extra)  # type: ignore
 
 
 class AudioData(TypedDict):
@@ -371,12 +371,12 @@ class AudioData(TypedDict):
 
 @dataclass
 class Audio(MessageSegment):
-    data: AudioData = field(default_factory=dict)
+    data: AudioData = field(default_factory=dict)  # type: ignore
     extra: InitVar[Optional[dict]] = None
 
     def __post_init__(self, extra: Optional[dict]):
         if extra:
-            self.data.update(extra)
+            self.data.update(extra)  # type: ignore
 
 
 class VideoData(TypedDict):
@@ -387,12 +387,12 @@ class VideoData(TypedDict):
 
 @dataclass
 class Video(MessageSegment):
-    data: VideoData = field(default_factory=dict)
+    data: VideoData = field(default_factory=dict)  # type: ignore
     extra: InitVar[Optional[dict]] = None
 
     def __post_init__(self, extra: Optional[dict]):
         if extra:
-            self.data.update(extra)
+            self.data.update(extra)  # type: ignore
 
 
 class FileData(TypedDict):
@@ -403,17 +403,17 @@ class FileData(TypedDict):
 
 @dataclass
 class File(MessageSegment):
-    data: FileData = field(default_factory=dict)
+    data: FileData = field(default_factory=dict)  # type: ignore
     extra: InitVar[Optional[dict]] = None
 
     def __post_init__(self, extra: Optional[dict]):
         if extra:
-            self.data.update(extra)
+            self.data.update(extra)  # type: ignore
 
 
 @dataclass
 class Bold(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -426,7 +426,7 @@ class Bold(MessageSegment):
 
 @dataclass
 class Italic(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -439,7 +439,7 @@ class Italic(MessageSegment):
 
 @dataclass
 class Underline(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -452,7 +452,7 @@ class Underline(MessageSegment):
 
 @dataclass
 class Strikethrough(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -465,7 +465,7 @@ class Strikethrough(MessageSegment):
 
 @dataclass
 class Spoiler(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -478,7 +478,7 @@ class Spoiler(MessageSegment):
 
 @dataclass
 class Code(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -491,7 +491,7 @@ class Code(MessageSegment):
 
 @dataclass
 class Superscript(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -504,7 +504,7 @@ class Superscript(MessageSegment):
 
 @dataclass
 class Subscript(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -517,7 +517,7 @@ class Subscript(MessageSegment):
 
 @dataclass
 class Br(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -530,7 +530,7 @@ class Br(MessageSegment):
 
 @dataclass
 class Paragraph(MessageSegment):
-    data: TextData = field(default_factory=dict)
+    data: TextData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -549,7 +549,7 @@ class RenderMessageData(TypedDict):
 
 @dataclass
 class RenderMessage(MessageSegment):
-    data: RenderMessageData = field(default_factory=dict)
+    data: RenderMessageData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
@@ -572,7 +572,7 @@ class AuthorData(TypedDict):
 
 @dataclass
 class Author(MessageSegment):
-    data: AuthorData = field(default_factory=dict)
+    data: AuthorData = field(default_factory=dict)  # type: ignore
 
 
 class ButtonData(TypedDict, total=False):
@@ -586,17 +586,17 @@ class ButtonData(TypedDict, total=False):
 
 @dataclass
 class Button(MessageSegment):
-    data: ButtonData = field(default_factory=dict)
+    data: ButtonData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
-        attr = [f'type="{escape(self.data["type"])}"']
-        if self.data["type"] == "action":
-            attr.append(f'id="{escape(self.data["id"])}"')
-        if self.data["type"] == "link":
-            attr.append(f'href="{escape(self.data["href"])}"')
-        if self.data["type"] == "input":
-            attr.append(f'text="{escape(self.data["text"])}"')
+        attr = [f'type="{escape(self.data["type"])}"']  # type: ignore
+        if self.data["type"] == "action":  # type: ignore
+            attr.append(f'id="{escape(self.data["id"])}"')  # type: ignore
+        if self.data["type"] == "link":  # type: ignore
+            attr.append(f'href="{escape(self.data["href"])}"')  # type: ignore
+        if self.data["type"] == "input":  # type: ignore
+            attr.append(f'text="{escape(self.data["text"])}"')  # type: ignore
         if "theme" in self.data:
             attr.append(f'theme="{escape(self.data["theme"])}"')
         if "display" in self.data:
@@ -668,9 +668,9 @@ class Message(BaseMessage[MessageSegment]):
                     msg.append(Link("link", {"text": elem.attrs["href"]}))
             elif elem.type == "button":
                 if elem.children:
-                    msg.append(Button("button", {"display": elem.children[0].attrs["text"], **elem.attrs}))
+                    msg.append(Button("button", {"display": elem.children[0].attrs["text"], **elem.attrs}))  # type: ignore
                 else:
-                    msg.append(Button("button", {**elem.attrs}))
+                    msg.append(Button("button", {**elem.attrs}))  # type: ignore
             elif elem.type in STYLE_TYPE_MAP:
                 seg_cls, seg_type = STYLE_TYPE_MAP[elem.type]
                 msg.append(seg_cls(seg_type, {"text": elem.children[0].attrs["text"]}))
@@ -680,7 +680,7 @@ class Message(BaseMessage[MessageSegment]):
                 data = elem.attrs.copy()
                 if elem.children:
                     data["content"] = Message.from_satori_element(elem.children)
-                msg.append(RenderMessage(elem.type, data))
+                msg.append(RenderMessage(elem.type, data))  # type: ignore
             else:
                 msg.append(Text("text", {"text": str(elem)}))
         return msg

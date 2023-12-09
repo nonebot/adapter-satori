@@ -36,6 +36,8 @@ from .models import (
 
 
 class Adapter(BaseAdapter):
+    bots: Dict[str, Bot]
+
     @override
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
@@ -225,7 +227,8 @@ class Adapter(BaseAdapter):
                 else:
                     if isinstance(event, LoginAddedEvent):
                         bot = Bot(self, event.self_id, event.platform, info)
-                        bot.on_ready(event.user)
+                        if event.user:
+                            bot.on_ready(event.user)
                         self.bot_connect(bot)
                         log(
                             "INFO",
@@ -238,7 +241,7 @@ class Adapter(BaseAdapter):
                             f"<y>Bot {escape_tag(event.self_id)}</y> disconnected",
                         )
                         continue
-                    elif isinstance(event, LoginUpdatedEvent):
+                    elif isinstance(event, LoginUpdatedEvent) and event.user:
                         self.bots[event.self_id].on_ready(event.user)
                     if not (bot := self.bots.get(event.self_id)):
                         log(
