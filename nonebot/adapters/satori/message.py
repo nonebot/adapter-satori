@@ -89,7 +89,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if url:
             data = {"src": url}
         elif path:
-            data = {"src": Path(path).as_uri()}
+            data = {"src": Path(path).absolute().as_uri()}
         elif raw:
             bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
@@ -113,7 +113,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if url:
             data = {"src": url}
         elif path:
-            data = {"src": Path(path).as_uri()}
+            data = {"src": Path(path).absolute().as_uri()}
         elif raw:
             bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
@@ -137,7 +137,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if url:
             data = {"src": url}
         elif path:
-            data = {"src": Path(path).as_uri()}
+            data = {"src": Path(path).absolute().as_uri()}
         elif raw:
             bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
@@ -161,7 +161,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if url:
             data = {"src": url}
         elif path:
-            data = {"src": Path(path).as_uri()}
+            data = {"src": Path(path).absolute().as_uri()}
         elif raw:
             bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
             data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
