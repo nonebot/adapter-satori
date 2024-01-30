@@ -20,11 +20,11 @@ class ClientInfo(BaseModel):
 
     @property
     def api_base(self):
-        return URL(f"http://{self.host}:{self.port}") / self.path / "v1"
+        return URL(f"http://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
 
     @property
     def ws_base(self):
-        return URL(f"ws://{self.host}:{self.port}") / self.path / "v1"
+        return URL(f"ws://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
 
 
 class Config(BaseModel, extra=Extra.ignore):
