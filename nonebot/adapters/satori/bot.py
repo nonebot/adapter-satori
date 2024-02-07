@@ -45,10 +45,13 @@ def _check_reply(
     except ValueError:
         return
 
-    event.to_me = True
     msg_seg = message[index]
-
     event.reply = msg_seg  # type: ignore
+
+    author_msg = msg_seg.data["content"].get("author")
+    if author_msg:
+        author_seg = author_msg[0]
+        event.to_me = author_seg.data.get("id") == bot.self_id
 
     del message[index]
     if (
