@@ -1,10 +1,11 @@
+import json
 import asyncio
 from typing_extensions import override
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import parse_raw_as
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed
+from nonebot.compat import PYDANTIC_V2, type_validate_python
 from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
 
 from nonebot.adapters import Adapter as BaseAdapter
@@ -24,6 +25,7 @@ from .event import (
     LoginUpdatedEvent,
 )
 from .models import (
+    Opcode,
     Payload,
     LoginStatus,
     PayloadType,
@@ -88,10 +90,12 @@ class Adapter(BaseAdapter):
 
     @staticmethod
     def payload_to_json(payload: Payload) -> str:
-        return payload.__config__.json_dumps(payload.dict(), default=payload.__json_encoder__)
+        if PYDANTIC_V2:
+            return payload.model_dump_json(by_alias=True)
+        return payload.json(by_alias=True)
 
     async def receive_payload(self, info: ClientInfo, ws: WebSocket) -> Payload:
-        payload = parse_raw_as(PayloadType, await ws.receive())
+        payload = type_validate_python(PayloadType, json.loads(await ws.receive()))
         if isinstance(payload, EventPayload):
             self.sequences[info.identity] = payload.body.id
         return payload
@@ -149,7 +153,7 @@ class Adapter(BaseAdapter):
         """心跳"""
         while True:
             log("TRACE", f"Heartbeat {self.sequences[info.identity]}")
-            payload = PingPayload.parse_obj({})
+            payload = PingPayload(op=Opcode.PING, body={})
             try:
                 await ws.send(self.payload_to_json(payload))
             except Exception as e:
@@ -266,8 +270,10 @@ class Adapter(BaseAdapter):
         EventClass = EVENT_CLASSES.get(payload.type, None)
         if EventClass is None:
             log("WARNING", f"Unknown payload type: {payload.type}")
-            return Event.parse_obj(payload)
-        return EventClass.parse_obj(payload)
+            event = type_validate_python(Event, payload)
+            event.__type__ = payload.type  # type: ignore
+            return event
+        return type_validate_python(EventClass, payload)
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:

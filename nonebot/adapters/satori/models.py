@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
 
 from pydantic.generics import GenericModel
-from pydantic import Extra, Field, BaseModel, validator, root_validator
+from nonebot.compat import PYDANTIC_V2, ConfigDict
+from pydantic import Field, BaseModel, validator, root_validator
 
 from .utils import Element, log, parse
 
@@ -15,28 +16,52 @@ class ChannelType(IntEnum):
     DIRECT = 3
 
 
-class Channel(BaseModel, extra=Extra.allow):
+class Channel(BaseModel):
     id: str
     type: ChannelType
     name: Optional[str] = None
     parent_id: Optional[str] = None
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
-class Guild(BaseModel, extra=Extra.allow):
+    else:
+
+        class Config:
+            extra = "allow"
+
+
+class Guild(BaseModel):
     id: str
     name: Optional[str] = None
     avatar: Optional[str] = None
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
-class User(BaseModel, extra=Extra.allow):
+    else:
+
+        class Config:
+            extra = "allow"
+
+
+class User(BaseModel):
     id: str
     name: Optional[str] = None
     nick: Optional[str] = None
     avatar: Optional[str] = None
     is_bot: Optional[bool] = None
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
-class InnerMember(BaseModel, extra=Extra.allow):
+    else:
+
+        class Config:
+            extra = "allow"
+
+
+class InnerMember(BaseModel):
     user: Optional[User] = None
     name: Optional[str] = None
     nick: Optional[str] = None
@@ -55,15 +80,31 @@ class InnerMember(BaseModel, extra=Extra.allow):
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
 
 class OuterMember(InnerMember):
     user: User
     joined_at: datetime
 
 
-class Role(BaseModel, extra=Extra.allow):
+class Role(BaseModel):
     id: str
     name: Optional[str] = None
+
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
 
 
 class LoginStatus(IntEnum):
@@ -74,11 +115,19 @@ class LoginStatus(IntEnum):
     RECONNECT = 4
 
 
-class Login(BaseModel, extra=Extra.allow):
+class Login(BaseModel):
     user: Optional[User] = None
     self_id: Optional[str] = None
     platform: Optional[str] = None
     status: LoginStatus
+
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
 
 
 class OuterLogin(Login):
@@ -137,7 +186,7 @@ class PongPayload(Payload):
     op: Literal[Opcode.PONG] = Field(Opcode.PONG)
 
 
-class InnerMessage(BaseModel, extra=Extra.allow):
+class InnerMessage(BaseModel):
     id: str
     content: List[Element]
     channel: Optional[Channel] = None
@@ -191,6 +240,14 @@ class InnerMessage(BaseModel, extra=Extra.allow):
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
 
 class OuterMessage(InnerMessage):
     channel: Channel
@@ -198,7 +255,7 @@ class OuterMessage(InnerMessage):
     user: User
 
 
-class Event(BaseModel, extra=Extra.allow):
+class Event(BaseModel):
     id: int
     type: str
     platform: str
@@ -227,6 +284,14 @@ class Event(BaseModel, extra=Extra.allow):
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
 
 class EventPayload(Payload):
     op: Literal[Opcode.EVENT] = Field(Opcode.EVENT)
@@ -242,6 +307,14 @@ PayloadType = Union[
 T = TypeVar("T")
 
 
-class PageResult(GenericModel, Generic[T], extra=Extra.allow):
+class PageResult(GenericModel, Generic[T]):
     data: List[T]
     next: Optional[str] = None
+
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"

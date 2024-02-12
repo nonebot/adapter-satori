@@ -3,6 +3,7 @@ import json
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
+from pydantic import parse_obj_as
 from nonebot.message import handle_event
 from nonebot.drivers import Request, Response
 
@@ -273,7 +274,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id, "content": content},
         )
         res = await self._request(request)
-        return [SatoriMessage.parse_obj(i) for i in res]
+        return [parse_obj_as(SatoriMessage, i) for i in res]
 
     @API
     async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:
@@ -283,7 +284,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id, "message_id": message_id},
         )
         res = await self._request(request)
-        return SatoriMessage.parse_obj(res)
+        return parse_obj_as(SatoriMessage, res)
 
     @API
     async def message_delete(self, *, channel_id: str, message_id: str) -> None:
@@ -332,7 +333,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id},
         )
         res = await self._request(request)
-        return Channel.parse_obj(res)
+        return parse_obj_as(Channel, res)
 
     @API
     async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Channel]:
@@ -350,7 +351,7 @@ class Bot(BaseBot):
             self.info.api_base / "channel.create",
             json={"guild_id": guild_id, "data": data.dict()},
         )
-        return Channel.parse_obj(await self._request(request))
+        return parse_obj_as(Channel, await self._request(request))
 
     @API
     async def channel_update(
@@ -385,7 +386,7 @@ class Bot(BaseBot):
             self.info.api_base / "user.channel.create",
             json=data,
         )
-        return Channel.parse_obj(await self._request(request))
+        return parse_obj_as(Channel, await self._request(request))
 
     @API
     async def guild_get(self, *, guild_id: str) -> Guild:
@@ -394,7 +395,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.get",
             json={"guild_id": guild_id},
         )
-        return Guild.parse_obj(await self._request(request))
+        return parse_obj_as(Guild, await self._request(request))
 
     @API
     async def guild_list(self, *, next_token: Optional[str] = None) -> PageResult[Guild]:
@@ -491,7 +492,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.role.create",
             json={"guild_id": guild_id, "role": role.dict()},
         )
-        return Role.parse_obj(await self._request(request))
+        return parse_obj_as(Role, await self._request(request))
 
     @API
     async def guild_role_update(
@@ -596,7 +597,7 @@ class Bot(BaseBot):
             "POST",
             self.info.api_base / "login.get",
         )
-        return Login.parse_obj(await self._request(request))
+        return parse_obj_as(Login, await self._request(request))
 
     @API
     async def user_get(self, *, user_id: str) -> User:
@@ -605,7 +606,7 @@ class Bot(BaseBot):
             self.info.api_base / "user.get",
             json={"user_id": user_id},
         )
-        return User.parse_obj(await self._request(request))
+        return parse_obj_as(User, await self._request(request))
 
     @API
     async def friend_list(self, *, next_token: Optional[str] = None) -> PageResult[User]:
