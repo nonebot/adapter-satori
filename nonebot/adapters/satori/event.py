@@ -3,13 +3,13 @@ from copy import deepcopy
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, Type, TypeVar, Optional
 
-from pydantic import root_validator
 from nonebot.utils import escape_tag
-from nonebot.compat import PYDANTIC_V2
+from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Event as BaseEvent
 
 from .models import Role, User
+from .compat import model_validator
 from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import InnerMessage as SatoriMessage
@@ -243,7 +243,7 @@ class MessageEvent(Event):
     def get_message(self) -> Message:
         return self._message
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         values["_message"] = Message.from_satori_element(values["message"].content)
         values["original_message"] = deepcopy(values["_message"])
@@ -263,13 +263,9 @@ class MessageCreatedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PrivateMessageCreatedEvent.model_validate(self)
-            return PrivateMessageCreatedEvent.parse_obj(self)
+            return type_validate_python(PrivateMessageCreatedEvent, self)
         else:
-            if PYDANTIC_V2:
-                return PublicMessageCreatedEvent.model_validate(self)
-            return PublicMessageCreatedEvent.parse_obj(self)
+            return type_validate_python(PublicMessageCreatedEvent, self)
 
 
 @register_event_class
@@ -278,13 +274,9 @@ class MessageDeletedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PrivateMessageDeletedEvent.model_validate(self)
-            return PrivateMessageDeletedEvent.parse_obj(self)
+            return type_validate_python(PrivateMessageDeletedEvent, self)
         else:
-            if PYDANTIC_V2:
-                return PublicMessageDeletedEvent.model_validate(self)
-            return PublicMessageDeletedEvent.parse_obj(self)
+            return type_validate_python(PublicMessageDeletedEvent, self)
 
 
 @register_event_class
@@ -293,13 +285,9 @@ class MessageUpdatedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PrivateMessageUpdatedEvent.model_validate(self)
-            return PrivateMessageUpdatedEvent.parse_obj(self)
+            return type_validate_python(PrivateMessageUpdatedEvent, self)
         else:
-            if PYDANTIC_V2:
-                return PublicMessageUpdatedEvent.model_validate(self)
-            return PublicMessageUpdatedEvent.parse_obj(self)
+            return type_validate_python(PublicMessageUpdatedEvent, self)
 
 
 class PrivateMessageEvent(MessageEvent):
@@ -404,7 +392,7 @@ class ReactionEvent(NoticeEvent):
     def get_session_id(self) -> str:
         return f"{self.channel.id}/{self.user.id}"
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         values["_message"] = Message.from_satori_element(values["message"]["content"])
         return values
@@ -462,13 +450,9 @@ class InteractionButtonEvent(InteractionEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PublicInteractionButtonEvent.model_validate(self)
-            return PublicInteractionButtonEvent.parse_obj(self)
+            return type_validate_python(PublicInteractionButtonEvent, self)
         if self.user:
-            if PYDANTIC_V2:
-                return PrivateInteractionButtonEvent.model_validate(self)
-            return PrivateInteractionButtonEvent.parse_obj(self)
+            return type_validate_python(PrivateInteractionButtonEvent, self)
         return self
 
 
@@ -529,7 +513,7 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
     def get_event_description(self) -> str:
         return escape_tag(f"Command interacted with {self.argv}")
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         argv: ArgvInteraction = values["argv"]
         cmd = argv.name
@@ -541,13 +525,9 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PublicInteractionCommandArgvEvent.model_validate(self)
-            return PublicInteractionCommandArgvEvent.parse_obj(self)
+            return type_validate_python(PublicInteractionCommandArgvEvent, self)
         if self.user:
-            if PYDANTIC_V2:
-                return PrivateInteractionCommandArgvEvent.model_validate(self)
-            return PrivateInteractionCommandArgvEvent.parse_obj(self)
+            return type_validate_python(PrivateInteractionCommandArgvEvent, self)
         return self
 
 
@@ -584,7 +564,7 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
     to_me: bool = False
     reply: Optional[RenderMessage] = None
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def generate_message(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         values["_message"] = Message.from_satori_element(values["message"].content)
         values["original_message"] = deepcopy(values["_message"])
@@ -596,13 +576,9 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            if PYDANTIC_V2:
-                return PublicInteractionCommandMessageEvent.model_validate(self)
-            return PublicInteractionCommandMessageEvent.parse_obj(self)
+            return type_validate_python(PublicInteractionCommandMessageEvent, self)
         if self.user:
-            if PYDANTIC_V2:
-                return PrivateInteractionCommandMessageEvent.model_validate(self)
-            return PrivateInteractionCommandMessageEvent.parse_obj(self)
+            return type_validate_python(PrivateInteractionCommandMessageEvent, self)
         return self
 
 

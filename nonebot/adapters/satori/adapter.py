@@ -8,6 +8,7 @@ from nonebot.exception import WebSocketClosed
 from nonebot.compat import PYDANTIC_V2, type_validate_python
 from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
 
+from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 
 from .bot import Bot
@@ -27,6 +28,7 @@ from .event import (
 from .models import (
     Opcode,
     Payload,
+    Identify,
     LoginStatus,
     PayloadType,
     PingPayload,
@@ -44,7 +46,7 @@ class Adapter(BaseAdapter):
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
         # 读取适配器所需的配置项
-        self.satori_config: Config = Config.parse_obj(self.config)
+        self.satori_config: Config = get_plugin_config(Config)
         self.tasks: List[asyncio.Task] = []  # 存储 ws 任务
         self.sequences: Dict[str, int] = {}  # 存储 连接序列号
         self.setup()
@@ -70,7 +72,7 @@ class Adapter(BaseAdapter):
                 f"{self.get_name()} Adapter need a WebSocketClient Driver to work."
             )
         # 在 NoneBot 启动和关闭时进行相关操作
-        self.driver.on_startup(self.startup)
+        self.on_ready(self.startup)
         self.driver.on_shutdown(self.shutdown)
 
     async def startup(self) -> None:
@@ -102,12 +104,11 @@ class Adapter(BaseAdapter):
 
     async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Optional[Literal[True]]:
         """鉴权连接"""
-        payload = IdentifyPayload.parse_obj(
-            {
-                "body": {
-                    "token": info.token,
-                },
-            }
+        payload = IdentifyPayload(
+            op=Opcode.IDENTIFY,
+            body=Identify(
+                token=info.token,
+            ),
         )
         if info.identity in self.sequences:
             payload.body.sequence = self.sequences[info.identity]

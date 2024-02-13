@@ -3,9 +3,9 @@ import json
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
-from pydantic import parse_obj_as
 from nonebot.message import handle_event
 from nonebot.drivers import Request, Response
+from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
 
@@ -274,7 +274,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id, "content": content},
         )
         res = await self._request(request)
-        return [parse_obj_as(SatoriMessage, i) for i in res]
+        return [type_validate_python(SatoriMessage, i) for i in res]
 
     @API
     async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:
@@ -284,7 +284,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id, "message_id": message_id},
         )
         res = await self._request(request)
-        return parse_obj_as(SatoriMessage, res)
+        return type_validate_python(SatoriMessage, res)
 
     @API
     async def message_delete(self, *, channel_id: str, message_id: str) -> None:
@@ -323,7 +323,7 @@ class Bot(BaseBot):
             self.info.api_base / "message.list",
             json={"channel_id": channel_id, "next": next_token},
         )
-        return PageResult[SatoriMessage].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[SatoriMessage], await self._request(request))
 
     @API
     async def channel_get(self, *, channel_id: str) -> Channel:
@@ -333,7 +333,7 @@ class Bot(BaseBot):
             json={"channel_id": channel_id},
         )
         res = await self._request(request)
-        return parse_obj_as(Channel, res)
+        return type_validate_python(Channel, res)
 
     @API
     async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Channel]:
@@ -342,7 +342,7 @@ class Bot(BaseBot):
             self.info.api_base / "channel.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return PageResult[Channel].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[Channel], await self._request(request))
 
     @API
     async def channel_create(self, *, guild_id: str, data: Channel) -> Channel:
@@ -351,7 +351,7 @@ class Bot(BaseBot):
             self.info.api_base / "channel.create",
             json={"guild_id": guild_id, "data": data.dict()},
         )
-        return parse_obj_as(Channel, await self._request(request))
+        return type_validate_python(Channel, await self._request(request))
 
     @API
     async def channel_update(
@@ -386,7 +386,7 @@ class Bot(BaseBot):
             self.info.api_base / "user.channel.create",
             json=data,
         )
-        return parse_obj_as(Channel, await self._request(request))
+        return type_validate_python(Channel, await self._request(request))
 
     @API
     async def guild_get(self, *, guild_id: str) -> Guild:
@@ -395,7 +395,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.get",
             json={"guild_id": guild_id},
         )
-        return parse_obj_as(Guild, await self._request(request))
+        return type_validate_python(Guild, await self._request(request))
 
     @API
     async def guild_list(self, *, next_token: Optional[str] = None) -> PageResult[Guild]:
@@ -404,7 +404,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.list",
             json={"next": next_token},
         )
-        return PageResult[Guild].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[Guild], await self._request(request))
 
     @API
     async def guild_approve(self, *, request_id: str, approve: bool, comment: str) -> None:
@@ -424,7 +424,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.member.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return PageResult[OuterMember].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[OuterMember], await self._request(request))
 
     @API
     async def guild_member_get(self, *, guild_id: str, user_id: str) -> OuterMember:
@@ -433,7 +433,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.member.get",
             json={"guild_id": guild_id, "user_id": user_id},
         )
-        return OuterMember.parse_obj(await self._request(request))
+        return type_validate_python(OuterMember, await self._request(request))
 
     @API
     async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False) -> None:
@@ -478,7 +478,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.role.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return PageResult[Role].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[Role], await self._request(request))
 
     @API
     async def guild_role_create(
@@ -492,7 +492,7 @@ class Bot(BaseBot):
             self.info.api_base / "guild.role.create",
             json={"guild_id": guild_id, "role": role.dict()},
         )
-        return parse_obj_as(Role, await self._request(request))
+        return type_validate_python(Role, await self._request(request))
 
     @API
     async def guild_role_update(
@@ -589,7 +589,7 @@ class Bot(BaseBot):
                 "next": next_token,
             },
         )
-        return PageResult[User].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[User], await self._request(request))
 
     @API
     async def login_get(self) -> Login:
@@ -597,7 +597,7 @@ class Bot(BaseBot):
             "POST",
             self.info.api_base / "login.get",
         )
-        return parse_obj_as(Login, await self._request(request))
+        return type_validate_python(Login, await self._request(request))
 
     @API
     async def user_get(self, *, user_id: str) -> User:
@@ -606,7 +606,7 @@ class Bot(BaseBot):
             self.info.api_base / "user.get",
             json={"user_id": user_id},
         )
-        return parse_obj_as(User, await self._request(request))
+        return type_validate_python(User, await self._request(request))
 
     @API
     async def friend_list(self, *, next_token: Optional[str] = None) -> PageResult[User]:
@@ -615,7 +615,7 @@ class Bot(BaseBot):
             self.info.api_base / "friend.list",
             json={"next": next_token},
         )
-        return PageResult[User].parse_obj(await self._request(request))
+        return type_validate_python(PageResult[User], await self._request(request))
 
     @API
     async def friend_approve(self, *, request_id: str, approve: bool, comment: str) -> None:

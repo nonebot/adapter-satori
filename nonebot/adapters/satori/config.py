@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from yarl import URL
-from pydantic import Extra, Field, BaseModel
+from pydantic import Field, BaseModel
 
 
 class ClientInfo(BaseModel):
@@ -27,6 +27,6 @@ class ClientInfo(BaseModel):
         return URL(f"ws://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
 
 
-class Config(BaseModel, extra=Extra.ignore):
+class Config(BaseModel):
     satori_clients: List[ClientInfo] = Field(default_factory=list)
     """client 配置"""

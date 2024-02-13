@@ -2,10 +2,10 @@ from enum import IntEnum
 from datetime import datetime
 from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
 
-from pydantic.generics import GenericModel
+from pydantic import Field, BaseModel, validator
 from nonebot.compat import PYDANTIC_V2, ConfigDict
-from pydantic import Field, BaseModel, validator, root_validator
 
+from .compat import model_validator
 from .utils import Element, log, parse
 
 
@@ -196,7 +196,7 @@ class InnerMessage(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def ensure_content(cls, values):
         if "content" in values:
             return values
@@ -307,14 +307,21 @@ PayloadType = Union[
 T = TypeVar("T")
 
 
-class PageResult(GenericModel, Generic[T]):
-    data: List[T]
-    next: Optional[str] = None
+if PYDANTIC_V2:
 
-    if PYDANTIC_V2:
+    class PageResult(BaseModel, Generic[T]):  # type: ignore
+        data: List[T]
+        next: Optional[str] = None
+
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
-    else:
+else:
+
+    from pydantic.generics import GenericModel
+
+    class PageResult(GenericModel, Generic[T]):
+        data: List[T]
+        next: Optional[str] = None
 
         class Config:
             extra = "allow"
