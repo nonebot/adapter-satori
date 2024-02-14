@@ -29,9 +29,19 @@ dev = [
     "pre-commit>=3.5.0",
     "nonebot2[httpx,websockets]>=2.2.0",
 ]
+test = [
+    "nonebug>=0.3.5",
+    "pytest-asyncio>=0.23.5",
+    "pytest-xdist>=3.5.0",
+    "wsproto>=1.2.0",
+    "werkzeug>=3.0.1",
+]
 
 [tool.pdm.build]
 includes = ["nonebot"]
+
+[tool.pdm.scripts]
+test = "pytest -W ignore -s"
 
 [tool.black]
 line-length = 110

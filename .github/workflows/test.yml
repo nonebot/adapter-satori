@@ -1,0 +1,29 @@
+name: Test & Track
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        py_ver: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        name: Set up Python ${{ matrix.py_ver }}
+        with:
+          python-version: ${{ matrix.py_ver }}
+          architecture: 'x64'
+      - name: Ensure PDM
+        run: |
+          python -m pip install pdm
+      - name: install
+        run: |
+          pdm sync -G:all -v
+      - name: test
+        run: |
+          pdm run test
