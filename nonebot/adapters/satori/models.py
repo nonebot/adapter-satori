@@ -11,9 +11,9 @@ from .utils import Element, log, parse
 
 class ChannelType(IntEnum):
     TEXT = 0
-    VOICE = 1
+    DIRECT = 1
     CATEGORY = 2
-    DIRECT = 3
+    VOICE = 3
 
 
 class Channel(BaseModel):
