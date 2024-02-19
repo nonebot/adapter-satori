@@ -167,11 +167,14 @@ class Bot(BaseBot):
 
     def get_authorization_header(self) -> Dict[str, str]:
         """获取当前 Bot 的鉴权信息"""
-        return {
+        header = {
             "Authorization": f"Bearer {self.info.token}",
             "X-Self-ID": self.self_id,
             "X-Platform": self.platform,
         }
+        if not self.info.token:
+            del header["Authorization"]
+        return header
 
     async def handle_event(self, event: Event) -> None:
         if isinstance(event, MessageEvent):

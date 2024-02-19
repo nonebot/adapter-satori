@@ -4,7 +4,7 @@ from typing_extensions import override
 from typing import TYPE_CHECKING, Dict, Type, TypeVar, Optional
 
 from nonebot.utils import escape_tag
-from nonebot.compat import PYDANTIC_V2, type_validate_python
+from nonebot.compat import PYDANTIC_V2, model_dump, type_validate_python
 
 from nonebot.adapters import Event as BaseEvent
 
@@ -267,9 +267,9 @@ class MessageCreatedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            return type_validate_python(PrivateMessageCreatedEvent, self)
+            return type_validate_python(PrivateMessageCreatedEvent, model_dump(self))
         else:
-            return type_validate_python(PublicMessageCreatedEvent, self)
+            return type_validate_python(PublicMessageCreatedEvent, model_dump(self))
 
 
 @register_event_class
@@ -278,9 +278,9 @@ class MessageDeletedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            return type_validate_python(PrivateMessageDeletedEvent, self)
+            return type_validate_python(PrivateMessageDeletedEvent, model_dump(self))
         else:
-            return type_validate_python(PublicMessageDeletedEvent, self)
+            return type_validate_python(PublicMessageDeletedEvent, model_dump(self))
 
 
 @register_event_class
@@ -289,9 +289,9 @@ class MessageUpdatedEvent(MessageEvent):
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
-            return type_validate_python(PrivateMessageUpdatedEvent, self)
+            return type_validate_python(PrivateMessageUpdatedEvent, model_dump(self))
         else:
-            return type_validate_python(PublicMessageUpdatedEvent, self)
+            return type_validate_python(PublicMessageUpdatedEvent, model_dump(self))
 
 
 class PrivateMessageEvent(MessageEvent):
@@ -457,9 +457,9 @@ class InteractionButtonEvent(InteractionEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            return type_validate_python(PublicInteractionButtonEvent, self)
+            return type_validate_python(PublicInteractionButtonEvent, model_dump(self))
         if self.user:
-            return type_validate_python(PrivateInteractionButtonEvent, self)
+            return type_validate_python(PrivateInteractionButtonEvent, model_dump(self))
         return self
 
 
@@ -536,9 +536,9 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            return type_validate_python(PublicInteractionCommandArgvEvent, self)
+            return type_validate_python(PublicInteractionCommandArgvEvent, model_dump(self))
         if self.user:
-            return type_validate_python(PrivateInteractionCommandArgvEvent, self)
+            return type_validate_python(PrivateInteractionCommandArgvEvent, model_dump(self))
         return self
 
 
@@ -591,9 +591,9 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
 
     def convert(self):
         if self.channel and self.user and self.channel.type != ChannelType.DIRECT:
-            return type_validate_python(PublicInteractionCommandMessageEvent, self)
+            return type_validate_python(PublicInteractionCommandMessageEvent, model_dump(self))
         if self.user:
-            return type_validate_python(PrivateInteractionCommandMessageEvent, self)
+            return type_validate_python(PrivateInteractionCommandMessageEvent, model_dump(self))
         return self
 
 

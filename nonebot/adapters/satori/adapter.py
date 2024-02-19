@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed
-from nonebot.compat import PYDANTIC_V2, type_validate_python
+from nonebot.compat import PYDANTIC_V2, model_dump, type_validate_python
 from nonebot.drivers import Driver, Request, WebSocket, HTTPClientMixin, WebSocketClientMixin
 
 from nonebot import get_plugin_config
@@ -271,10 +271,10 @@ class Adapter(BaseAdapter):
         EventClass = EVENT_CLASSES.get(payload.type, None)
         if EventClass is None:
             log("WARNING", f"Unknown payload type: {payload.type}")
-            event = type_validate_python(Event, payload)
+            event = type_validate_python(Event, model_dump(payload))
             event.__type__ = payload.type  # type: ignore
             return event
-        return type_validate_python(EventClass, payload)
+        return type_validate_python(EventClass, model_dump(payload))
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
