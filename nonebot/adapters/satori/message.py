@@ -8,7 +8,7 @@ from typing import Any, List, Type, Union, Iterable, Optional, TypedDict
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .element import Element, parse, escape
+from .element import Element, parse, escape, param_case
 
 
 class RawData(TypedDict):
@@ -19,16 +19,18 @@ class RawData(TypedDict):
 class MessageSegment(BaseMessageSegment["Message"]):
     def __str__(self) -> str:
         def _attr(key: str, value: Any):
+            if value is None:
+                return ""
+            key = param_case(key)
             if value is True:
-                return key
+                return f" {key}"
             if value is False:
-                return f"no-{key}"
-            if isinstance(value, (int, float)):
-                return f"{key}={value}"
-            return f'{key}="{escape(str(value))}"'
+                return f" no-{key}"
+            return f' {key}="{escape(str(value), True)}"'
 
-        attrs = " ".join(_attr(k, v) for k, v in self.data.items())
-        attrs = f" {attrs}" if attrs else ""
+        attrs = "".join(_attr(k, v) for k, v in self.data.items())
+        if self.type == "text" and "text" in self.data:
+            return escape(self.data["text"])
         return f"<{self.type}{attrs}/>"
 
     @classmethod
