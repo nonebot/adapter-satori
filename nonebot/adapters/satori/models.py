@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
 from pydantic import Field, BaseModel, validator
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 
+from .utils import log
 from .compat import model_validator
-from .utils import Element, log, parse
 
 
 class ChannelType(IntEnum):
@@ -188,7 +188,7 @@ class PongPayload(Payload):
 
 class InnerMessage(BaseModel):
     id: str
-    content: List[Element]
+    content: str
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
     member: Optional[InnerMember] = None
@@ -205,16 +205,6 @@ class InnerMessage(BaseModel):
             "received message without content, " "this may be caused by a bug of Satori Server.",
         )
         return {**values, "content": "Unknown"}
-
-    @validator("content", pre=True)
-    def parse_content(cls, v):
-        if isinstance(v, list):
-            return v
-        if v is None:
-            return None
-        if not isinstance(v, str):
-            raise ValueError("content must be str")
-        return parse(v)
 
     @validator("created_at", pre=True)
     def parse_created_at(cls, v):

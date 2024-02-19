@@ -8,7 +8,7 @@ from typing import Any, List, Type, Union, Iterable, Optional, TypedDict
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .utils import Element, parse, escape
+from .element import Element, parse, escape
 
 
 class RawData(TypedDict):

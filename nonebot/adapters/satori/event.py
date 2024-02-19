@@ -8,6 +8,7 @@ from nonebot.compat import PYDANTIC_V2, model_dump, type_validate_python
 
 from nonebot.adapters import Event as BaseEvent
 
+from .element import parse
 from .models import Role, User
 from .compat import model_validator
 from .models import Event as SatoriEvent
@@ -246,10 +247,10 @@ class MessageEvent(Event):
     @model_validator(mode="after")
     def generate_message(cls, values):
         if PYDANTIC_V2:
-            values._message = Message.from_satori_element(values.message.content)
+            values._message = Message.from_satori_element(parse(values.message.content))
             values.original_message = deepcopy(values._message)
         else:
-            values["_message"] = Message.from_satori_element(values["message"].content)
+            values["_message"] = Message.from_satori_element(parse(values["message"].content))
             values["original_message"] = deepcopy(values["_message"])
         return values
 
@@ -399,9 +400,9 @@ class ReactionEvent(NoticeEvent):
     @model_validator(mode="after")
     def generate_message(cls, values):
         if PYDANTIC_V2:
-            values._message = Message.from_satori_element(values.message.content)
+            values._message = Message.from_satori_element(parse(values.message.content))
         else:
-            values["_message"] = Message.from_satori_element(values["message"]["content"])
+            values["_message"] = Message.from_satori_element(parse(values["message"].cotent))
         return values
 
     @property
@@ -578,10 +579,10 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
     @model_validator(mode="after")
     def generate_message(cls, values):
         if PYDANTIC_V2:
-            values._message = Message.from_satori_element(values.message.content)
+            values._message = Message.from_satori_element(parse(values.message.content))
             values.original_message = deepcopy(values._message)
         else:
-            values["_message"] = Message.from_satori_element(values["message"].content)
+            values["_message"] = Message.from_satori_element(parse(values["message"].content))
             values["original_message"] = deepcopy(values["_message"])
         return values
 
