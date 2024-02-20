@@ -1,3 +1,4 @@
+import re
 from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
@@ -9,11 +10,6 @@ from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from .element import Element, parse, escape, param_case
-
-
-class RawData(TypedDict):
-    data: Union[bytes, BytesIO]
-    mime: str
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -83,7 +79,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def image(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
-        raw: Optional[RawData] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+        mime: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -92,9 +89,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": url}
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
-        elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
-            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        elif raw and mime:
+            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("image need at least one of url, path and raw")
         if cache is not None:
@@ -107,7 +104,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def audio(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
-        raw: Optional[RawData] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+        mime: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -116,9 +114,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": url}
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
-        elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
-            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        elif raw and mime:
+            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("audio need at least one of url, path and raw")
         if cache is not None:
@@ -131,7 +129,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def video(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
-        raw: Optional[RawData] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+        mime: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -140,9 +139,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": url}
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
-        elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
-            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        elif raw and mime:
+            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("video need at least one of url, path and raw")
         if cache is not None:
@@ -155,7 +154,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def file(
         url: Optional[str] = None,
         path: Optional[Union[str, Path]] = None,
-        raw: Optional[RawData] = None,
+        raw: Optional[Union[bytes, BytesIO]] = None,
+        mime: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -164,9 +164,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": url}
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
-        elif raw:
-            bd = raw["data"] if isinstance(raw["data"], bytes) else raw["data"].getvalue()  # type: ignore
-            data = {"src": f"data:{raw['mime']};base64,{b64encode(bd).decode()}"}
+        elif raw and mime:
+            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("file need at least one of url, path and raw")
         if cache is not None:
@@ -174,46 +174,6 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if timeout is not None:
             data["timeout"] = timeout
         return File("file", data, extra=extra)  # type: ignore
-
-    @staticmethod
-    def bold(text: str) -> "Bold":
-        return Bold("bold", {"text": text})
-
-    @staticmethod
-    def italic(text: str) -> "Italic":
-        return Italic("italic", {"text": text})
-
-    @staticmethod
-    def underline(text: str) -> "Underline":
-        return Underline("underline", {"text": text})
-
-    @staticmethod
-    def strikethrough(text: str) -> "Strikethrough":
-        return Strikethrough("strikethrough", {"text": text})
-
-    @staticmethod
-    def spoiler(text: str) -> "Spoiler":
-        return Spoiler("spoiler", {"text": text})
-
-    @staticmethod
-    def code(text: str) -> "Code":
-        return Code("code", {"text": text})
-
-    @staticmethod
-    def superscript(text: str) -> "Superscript":
-        return Superscript("superscript", {"text": text})
-
-    @staticmethod
-    def subscript(text: str) -> "Subscript":
-        return Subscript("subscript", {"text": text})
-
-    @staticmethod
-    def br() -> "Br":
-        return Br("br", {"text": "\n"})
-
-    @staticmethod
-    def paragraph(text: str) -> "Paragraph":
-        return Paragraph("paragraph", {"text": text})
 
     @staticmethod
     def message(
@@ -283,9 +243,115 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["theme"] = theme
         return Button("button", data)  # type: ignore
 
+    @staticmethod
+    def raw(content: str) -> "Raw":
+        return Raw("raw", {"raw": content})
+
+    @staticmethod
+    def br() -> "Br":
+        return Br("br", {"text": "\n"})
+
+    @staticmethod
+    def bold(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["b"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["b"]})
+        text.data["styles"].insert(0, "b")
+        return text
+
+    @staticmethod
+    def italic(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["i"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["i"]})
+        text.data["styles"].insert(0, "i")
+        return text
+
+    @staticmethod
+    def underline(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["u"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["u"]})
+        text.data["styles"].insert(0, "u")
+        return text
+
+    @staticmethod
+    def strikethrough(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["s"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["s"]})
+        text.data["styles"].insert(0, "s")
+        return text
+
+    @staticmethod
+    def spoiler(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["spl"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["spl"]})
+        text.data["styles"].insert(0, "spl")
+        return text
+
+    @staticmethod
+    def code(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["code"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["code"]})
+        text.data["styles"].insert(0, "code")
+        return text
+
+    @staticmethod
+    def superscript(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["sup"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["sup"]})
+        text.data["styles"].insert(0, "sup")
+        return text
+
+    @staticmethod
+    def subscript(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["sub"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["sub"]})
+        text.data["styles"].insert(0, "sub")
+        return text
+
+    @staticmethod
+    def paragraph(text: Union[str, "Text", "Style"]) -> "Style":
+        if isinstance(text, str):
+            return Style("style", {"text": text, "styles": ["p"]})
+        if isinstance(text, Text):
+            return Style("style", {"text": text.data["text"], "styles": ["p"]})
+        text.data["styles"].insert(0, "p")
+        return text
+
     @override
     def is_text(self) -> bool:
         return False
+
+
+class RawData(TypedDict):
+    raw: str
+
+
+@dataclass
+class Raw(MessageSegment):
+    data: RawData = field(default_factory=dict)  # type: ignore
+
+    @override
+    def __str__(self) -> str:
+        return self.data["raw"]
+
+    @override
+    def is_text(self) -> bool:
+        return True
 
 
 class TextData(TypedDict):
@@ -413,114 +479,7 @@ class File(MessageSegment):
             self.data.update(extra)  # type: ignore
 
 
-@dataclass
-class Bold(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<b>{escape(self.data["text"])}</b>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Italic(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<i>{escape(self.data["text"])}</i>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Underline(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<u>{escape(self.data["text"])}</u>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Strikethrough(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<s>{escape(self.data["text"])}</s>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Spoiler(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<spl>{escape(self.data["text"])}</spl>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Code(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<code>{escape(self.data["text"])}</code>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Superscript(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<sup>{escape(self.data["text"])}</sup>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
-class Subscript(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        return f'<sub>{escape(self.data["text"])}</sub>'
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
-
-@dataclass
 class Br(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
-
     @override
     def __str__(self):
         return "<br/>"
@@ -530,13 +489,20 @@ class Br(MessageSegment):
         return True
 
 
+class StyleData(TypedDict):
+    text: str
+    styles: List[str]
+
+
 @dataclass
-class Paragraph(MessageSegment):
-    data: TextData = field(default_factory=dict)  # type: ignore
+class Style(MessageSegment):
+    data: StyleData = field(default_factory=dict)  # type: ignore
 
     @override
     def __str__(self):
-        return f'<p>{escape(self.data["text"])}</p>'
+        prefix = "".join(f"<{style}>" for style in self.data["styles"])
+        suffix = "".join(f"</{style}>" for style in reversed(self.data["styles"]))
+        return f"{prefix}{escape(self.data['text'])}{suffix}"
 
     @override
     def is_text(self) -> bool:
@@ -557,13 +523,13 @@ class RenderMessage(MessageSegment):
     def __str__(self):
         attr = []
         if "id" in self.data:
-            attr.append(f'id="{escape(self.data["id"])}"')
+            attr.append(f' id="{escape(self.data["id"])}"')
         if self.data.get("forward"):
-            attr.append("forward")
+            attr.append(" forward")
         if "content" not in self.data:
-            return f'<{self.type} {" ".join(attr)} />'
+            return f'<{self.type}{"".join(attr)} />'
         else:
-            return f'<{self.type} {" ".join(attr)}>{self.data["content"]}</{self.type}>'
+            return f'<{self.type}{"".join(attr)}>{self.data["content"]}</{self.type}>'
 
 
 class AuthorData(TypedDict):
@@ -619,19 +585,19 @@ ELEMENT_TYPE_MAP = {
 }
 
 STYLE_TYPE_MAP = {
-    "b": (Bold, "bold"),
-    "strong": (Bold, "bold"),
-    "i": (Italic, "italic"),
-    "em": (Italic, "italic"),
-    "u": (Underline, "underline"),
-    "ins": (Underline, "underline"),
-    "s": (Strikethrough, "strikethrough"),
-    "del": (Strikethrough, "strikethrough"),
-    "spl": (Spoiler, "spoiler"),
-    "code": (Code, "code"),
-    "sup": (Superscript, "superscript"),
-    "sub": (Subscript, "subscript"),
-    "p": (Paragraph, "paragraph"),
+    "b": "b",
+    "strong": "b",
+    "i": "i",
+    "em": "i",
+    "u": "u",
+    "ins": "u",
+    "s": "s",
+    "del": "s",
+    "spl": "spl",
+    "code": "code",
+    "sup": "sup",
+    "sub": "sub",
+    "p": "p",
 }
 
 
@@ -640,6 +606,24 @@ class Message(BaseMessage[MessageSegment]):
     @override
     def get_segment_class(cls) -> Type[MessageSegment]:
         return MessageSegment
+
+    @override
+    def __str__(self) -> str:
+        text = "".join(str(seg) for seg in self)
+
+        def calc_depth(msg: "Message") -> int:
+            depth = 0
+            for seg in msg:
+                if seg.type == "style":
+                    depth = max(depth, len(seg.data["styles"]))
+                if seg.type == "message" or seg.type == "quote":
+                    depth = max(depth, calc_depth(seg.data["content"]))
+            return depth
+
+        pat = re.compile(r"</(\w+)(?<!/p)><\1>")
+        for _ in range(calc_depth(self)):
+            text = pat.sub("", text)
+        return text
 
     @override
     def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
@@ -657,34 +641,78 @@ class Message(BaseMessage[MessageSegment]):
     @classmethod
     def from_satori_element(cls, elements: List[Element]) -> "Message":
         msg = Message()
-        for elem in elements:
-            if elem.type in ELEMENT_TYPE_MAP:
-                seg_cls, seg_type = ELEMENT_TYPE_MAP[elem.type]
-                msg.append(seg_cls(seg_type, elem.attrs.copy()))
-            elif elem.type in ("a", "link"):
-                if elem.children:
-                    msg.append(
-                        Link("link", {"text": elem.attrs["href"], "display": elem.children[0].attrs["text"]})
+
+        # make nested style elements into a single element:
+        # e.g.
+        # make <b>123<i>456</i>789</b>:
+        # Element(
+        #     "b", {}, [
+        #         Element("text", {"text": "123"}),
+        #         Element(
+        #             "i", {}, [
+        #                  Element("text", {"text": "456"})
+        #              ]
+        #         ),
+        #         Element("text", {"text": "789"})
+        #      ]
+        # )
+        # to <b>123</b><b><i>456</i></b><b>789</b>:
+        # [
+        #     Style("style", {"text": "123", "styles": ["b"]}),
+        #     Style("style", {"text": "456", "styles": ["b", "i"]}),
+        #     Style("style", {"text": "789", "styles": ["b"]})
+        # ]
+        # or
+        # [
+        #     ms.bold("123"),
+        #     ms.bold(ms.italic("456")),
+        #     ms.bold("789")
+        # ]
+        # Notice: if empty element like <at/>, <img/>, split them into two elements:
+        # e.g.
+        # Element("b", {}, [Element("text", {"text": "123"}), Element("at", {"id": "123"})])
+        # -> Style("style", {"text": "123", "styles": ["b"]}), At("at", {"id": "123"})
+
+        def handle(element: Element, upper_styles: Optional[List[str]] = None):
+            tag = element.tag()
+            if tag in ELEMENT_TYPE_MAP:
+                seg_cls, seg_type = ELEMENT_TYPE_MAP[tag]
+                yield seg_cls(seg_type, element.attrs.copy())
+            elif tag in ("a", "link"):
+                if element.children:
+                    yield Link(
+                        "link", {"text": element.attrs["href"], "display": element.children[0].attrs["text"]}
                     )
                 else:
-                    msg.append(Link("link", {"text": elem.attrs["href"]}))
-            elif elem.type == "button":
-                if elem.children:
-                    msg.append(Button("button", {"display": elem.children[0].attrs["text"], **elem.attrs}))  # type: ignore
+                    yield Link("link", {"text": element.attrs["href"]})
+            elif tag == "button":
+                if element.children:
+                    yield Button("button", {"display": element.children[0].attrs["text"], **element.attrs})  # type: ignore
                 else:
-                    msg.append(Button("button", {**elem.attrs}))  # type: ignore
-            elif elem.type in STYLE_TYPE_MAP:
-                seg_cls, seg_type = STYLE_TYPE_MAP[elem.type]
-                msg.append(seg_cls(seg_type, {"text": elem.children[0].attrs["text"]}))
-            elif elem.type in ("br", "newline"):
-                msg.append(Br("br", {"text": "\n"}))
-            elif elem.type in ("message", "quote"):
-                data = elem.attrs.copy()
-                if elem.children:
-                    data["content"] = Message.from_satori_element(elem.children)
-                msg.append(RenderMessage(elem.type, data))  # type: ignore
+                    yield Button("button", {**element.attrs})  # type: ignore
+            elif tag in STYLE_TYPE_MAP:
+                style = STYLE_TYPE_MAP[tag]
+                for child in element.children:
+                    child_tag = child.tag()
+                    if child_tag == "text":
+                        yield Style(
+                            "style", {"text": child.attrs["text"], "styles": [*(upper_styles or []), style]}
+                        )
+                    else:
+                        yield from handle(child, [*(upper_styles or []), style])
+            elif tag in ("br", "newline"):
+                yield Br("br", {"text": "\n"})
+            elif tag in ("message", "quote"):
+                data = element.attrs.copy()
+                if element.children:
+                    data["content"] = Message.from_satori_element(element.children)
+                yield RenderMessage(element.tag(), data)  # type: ignore
             else:
-                msg.append(Text("text", {"text": str(elem)}))
+                yield Raw("raw", {"raw": str(element)})
+
+        for elem in elements:
+            msg.extend(handle(elem))
+
         return msg
 
     @override
