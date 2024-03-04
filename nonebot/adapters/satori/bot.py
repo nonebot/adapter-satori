@@ -12,8 +12,8 @@ from nonebot.adapters import Bot as BaseBot
 from .utils import API, log
 from .config import ClientInfo
 from .event import Event, MessageEvent
-from .message import Message, MessageSegment
 from .models import InnerMessage as SatoriMessage
+from .message import Author, Message, RenderMessage, MessageSegment
 from .models import Role, User, Guild, Login, Channel, PageResult, OuterMember
 from .exception import (
     ActionFailed,
@@ -47,11 +47,15 @@ def _check_reply(
         return
 
     msg_seg = message[index]
+    if TYPE_CHECKING:
+        assert isinstance(msg_seg, RenderMessage)
     event.reply = msg_seg  # type: ignore
 
     author_msg = msg_seg.data["content"].get("author")
     if author_msg:
         author_seg = author_msg[0]
+        if TYPE_CHECKING:
+            assert isinstance(author_seg, Author)
         event.to_me = author_seg.data.get("id") == bot.self_id
 
     del message[index]

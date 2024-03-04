@@ -3,8 +3,8 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
 from dataclasses import InitVar, field, dataclass
-from typing_extensions import NotRequired, override
-from typing import Any, Dict, List, Tuple, Type, Union, Iterable, Optional, TypedDict
+from typing_extensions import Self, NotRequired, override
+from typing import Any, Dict, List, Type, Tuple, Union, Iterable, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -36,7 +36,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def text(content: str) -> "Text":
-        return Text("text", {"text": content})
+        return Text("text", {"text": content, "styles": {}})
 
     @staticmethod
     def at(
@@ -255,79 +255,63 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def bold(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
             return Text("text", {"text": text, "styles": {(0, len(text)): ["b"]}})
-        text.data["styles"] = {(0, len(text.data["text"])): ["b"]}
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "b")
         return text
 
     @staticmethod
-    def italic(text: Union[str, "Text", "Style"]) -> "Style":
+    def italic(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["i"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["i"]})
-        text.data["styles"].insert(0, "i")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["i"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "i")
         return text
 
     @staticmethod
-    def underline(text: Union[str, "Text", "Style"]) -> "Style":
+    def underline(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["u"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["u"]})
-        text.data["styles"].insert(0, "u")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["u"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "u")
         return text
 
     @staticmethod
-    def strikethrough(text: Union[str, "Text", "Style"]) -> "Style":
+    def strikethrough(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["s"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["s"]})
-        text.data["styles"].insert(0, "s")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["s"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "s")
         return text
 
     @staticmethod
-    def spoiler(text: Union[str, "Text", "Style"]) -> "Style":
+    def spoiler(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["spl"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["spl"]})
-        text.data["styles"].insert(0, "spl")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["spl"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "spl")
         return text
 
     @staticmethod
-    def code(text: Union[str, "Text", "Style"]) -> "Style":
+    def code(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["code"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["code"]})
-        text.data["styles"].insert(0, "code")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["code"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "code")
         return text
 
     @staticmethod
-    def superscript(text: Union[str, "Text", "Style"]) -> "Style":
+    def superscript(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["sup"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["sup"]})
-        text.data["styles"].insert(0, "sup")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["sup"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "sup")
         return text
 
     @staticmethod
-    def subscript(text: Union[str, "Text", "Style"]) -> "Style":
+    def subscript(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["sub"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["sub"]})
-        text.data["styles"].insert(0, "sub")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["sub"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "sub")
         return text
 
     @staticmethod
-    def paragraph(text: Union[str, "Text", "Style"]) -> "Style":
+    def paragraph(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["p"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["p"]})
-        text.data["styles"].insert(0, "p")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["p"]}})
+        text.data["styles"].setdefault((0, len(text.data["text"])), []).insert(0, "p")
         return text
 
     @override
@@ -354,7 +338,7 @@ class Raw(MessageSegment):
 
 class TextData(TypedDict):
     text: str
-    styles: NotRequired[Dict[Tuple[int, int], List[str]]]
+    styles: Dict[Tuple[int, int], List[str]]
 
 
 @dataclass
@@ -362,40 +346,71 @@ class Text(MessageSegment):
     data: TextData = field(default_factory=dict)  # type: ignore
 
     def __post_init__(self):
-        styles = self.data.get("styles", {})
+        if "styles" not in self.data:
+            self.data["styles"] = {}
+
+    def __merge__(self):
+        data = {}
+        styles = self.data["styles"]
         if not styles:
             return
-        # make sure each scale is unique:
-        # e.g. 
-        # {(0, 0): ["b"], (0, 1): ["b"], (1, 2): ["b", "i"]} -> {(0, 0): ["b"], (1, 2): ["b", "i"]}
-        # {(0, 0): ["b"], (0, 2): ["i"], (1, 2): ["b", "i"]} -> {(0, 2): ["b", "i"]}
-        # {(0, 0): ["b"], (0, 2): ["b", "i"], (1, 2): ["b", "i"]} -> {(0, 2): ["b", "i"]}
-        # {(0, 1): ["b"], (1, 2): ["b", "i"], (2, 3): ["i"]} -> {(0, 0): ["b"], (1, 2): ["b", "i"], (3, 3): ["i"]}
-        
-    
-    def __merge__(self):
-        ...
-        
+        for scale, _styles in styles.items():
+            for i in range(*scale):
+                if i not in data:
+                    data[i] = _styles[:]
+                else:
+                    data[i].extend(s for s in _styles if s not in data[i])
+        styles.clear()
+        data1 = {}
+        for i, _styles in data.items():
+            key = "\x01".join(_styles)
+            data1.setdefault(key, []).append(i)
+        data.clear()
+        for key, indexes in data1.items():
+            start = indexes[0]
+            end = start
+            for i in indexes[1:]:
+                if i - end == 1:
+                    end = i
+                else:
+                    data[(start, end + 1)] = key.split("\x01")
+                    start = end = i
+            if end >= start:
+                data[(start, end + 1)] = key.split("\x01")
+        for scale in sorted(data.keys()):
+            styles[scale] = data[scale]
+
+    def mark(self, start: int, end: int, *styles: str) -> Self:
+        _styles = self.data["styles"].setdefault((start, end), [])
+        for sty in styles:
+            sty = STYLE_TYPE_MAP.get(sty, sty)
+            if sty not in _styles:
+                _styles.append(sty)
+        self.__merge__()
+        return self
 
     @override
     def __str__(self) -> str:
-        if "styles" in self.data:
-            result = []
-            text = self.data["text"]
-            styles = self.data["styles"]
-            if not styles:
-                return escape(self.data["text"])
-            scales = sorted(styles.keys(), key=lambda x: x[0])
-            left = scales[0][0]
-            result.append(escape(text[:left]))
-            for scale in scales:
-                prefix = "".join(f"<{style}>" for style in styles[scale])
-                suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
-                result.append(prefix + escape(text[scale[0] : scale[1]]) + suffix)
-            right = scales[-1][1]
-            result.append(escape(text[right:]))
-            return "".join(result)
-        return escape(self.data["text"])
+        result = []
+        text = self.data["text"]
+        styles = self.data["styles"]
+        if not styles:
+            return escape(self.data["text"])
+        self.__merge__()
+        scales = sorted(styles.keys(), key=lambda x: x[0])
+        left = scales[0][0]
+        result.append(escape(text[:left]))
+        for scale in scales:
+            prefix = "".join(f"<{style}>" for style in styles[scale])
+            suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
+            result.append(prefix + escape(text[scale[0] : scale[1]]) + suffix)
+        right = scales[-1][1]
+        result.append(escape(text[right:]))
+        text = "".join(result)
+        pat = re.compile(r"</(\w+)(?<!/p)><\1>")
+        for _ in range(max(map(len, styles.values()))):
+            text = pat.sub("", text)
+        return text
 
     @override
     def is_text(self) -> bool:
@@ -519,6 +534,7 @@ class Br(MessageSegment):
     def is_text(self) -> bool:
         return True
 
+
 class RenderMessageData(TypedDict):
     id: NotRequired[str]
     forward: NotRequired[bool]
@@ -597,18 +613,66 @@ ELEMENT_TYPE_MAP = {
 STYLE_TYPE_MAP = {
     "b": "b",
     "strong": "b",
+    "bold": "b",
     "i": "i",
     "em": "i",
+    "italic": "i",
     "u": "u",
     "ins": "u",
+    "underline": "u",
     "s": "s",
     "del": "s",
+    "strike": "s",
     "spl": "spl",
+    "spoiler": "spl",
     "code": "code",
     "sup": "sup",
+    "superscript": "sup",
     "sub": "sub",
+    "subscript": "sub",
     "p": "p",
+    "paragraph": "p",
 }
+
+
+def handle(element: Element, upper_styles: Optional[List[str]] = None):
+    tag = element.tag()
+    if tag in ELEMENT_TYPE_MAP:
+        seg_cls, seg_type = ELEMENT_TYPE_MAP[tag]
+        yield seg_cls(seg_type, element.attrs.copy())
+    elif tag in ("a", "link"):
+        if element.children:
+            yield Link("link", {"text": element.attrs["href"], "display": element.children[0].attrs["text"]})
+        else:
+            yield Link("link", {"text": element.attrs["href"]})
+    elif tag == "button":
+        if element.children:
+            yield Button("button", {"display": element.children[0].attrs["text"], **element.attrs})  # type: ignore
+        else:
+            yield Button("button", {**element.attrs})  # type: ignore
+    elif tag in STYLE_TYPE_MAP:
+        style = STYLE_TYPE_MAP[tag]
+        for child in element.children:
+            child_tag = child.tag()
+            if child_tag == "text":
+                yield Text(
+                    "text",
+                    {
+                        "text": child.attrs["text"],
+                        "styles": {(0, len(child.attrs["text"])): [*(upper_styles or []), style]},
+                    },
+                )
+            else:
+                yield from handle(child, [*(upper_styles or []), style])
+    elif tag in ("br", "newline"):
+        yield Br("br", {"text": "\n"})
+    elif tag in ("message", "quote"):
+        data = element.attrs.copy()
+        if element.children:
+            data["content"] = Message.from_satori_element(element.children)
+        yield RenderMessage(tag, data)  # type: ignore
+    else:
+        yield Raw("raw", {"raw": str(element)})
 
 
 class Message(BaseMessage[MessageSegment]):
@@ -618,30 +682,14 @@ class Message(BaseMessage[MessageSegment]):
         return MessageSegment
 
     @override
-    def __str__(self) -> str:
-        text = "".join(str(seg) for seg in self)
-
-        def calc_depth(msg: "Message") -> int:
-            depth = 0
-            for seg in msg:
-                if seg.type == "style":
-                    depth = max(depth, len(seg.data["styles"]))
-                if seg.type == "message" or seg.type == "quote":
-                    depth = max(depth, calc_depth(seg.data["content"]))
-            return depth
-
-        pat = re.compile(r"</(\w+)(?<!/p)><\1>")
-        for _ in range(calc_depth(self)):
-            text = pat.sub("", text)
-        return text
-
-    @override
     def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
-        return super().__add__(MessageSegment.text(other) if isinstance(other, str) else other)
+        result = super().__add__(MessageSegment.text(other) if isinstance(other, str) else other)
+        return result.__merge_text__()
 
     @override
     def __radd__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
-        return super().__radd__(MessageSegment.text(other) if isinstance(other, str) else other)
+        result = super().__radd__(MessageSegment.text(other) if isinstance(other, str) else other)
+        return result.__merge_text__()
 
     @staticmethod
     @override
@@ -652,79 +700,31 @@ class Message(BaseMessage[MessageSegment]):
     def from_satori_element(cls, elements: List[Element]) -> "Message":
         msg = Message()
 
-        # make nested style elements into a single element:
-        # e.g.
-        # make <b>123<i>456</i>789</b>:
-        # Element(
-        #     "b", {}, [
-        #         Element("text", {"text": "123"}),
-        #         Element(
-        #             "i", {}, [
-        #                  Element("text", {"text": "456"})
-        #              ]
-        #         ),
-        #         Element("text", {"text": "789"})
-        #      ]
-        # )
-        # to <b>123</b><b><i>456</i></b><b>789</b>:
-        # [
-        #     Style("style", {"text": "123", "styles": ["b"]}),
-        #     Style("style", {"text": "456", "styles": ["b", "i"]}),
-        #     Style("style", {"text": "789", "styles": ["b"]})
-        # ]
-        # or
-        # [
-        #     ms.bold("123"),
-        #     ms.bold(ms.italic("456")),
-        #     ms.bold("789")
-        # ]
-        # Notice: if empty element like <at/>, <img/>, split them into two elements:
-        # e.g.
-        # Element("b", {}, [Element("text", {"text": "123"}), Element("at", {"id": "123"})])
-        # -> Style("style", {"text": "123", "styles": ["b"]}), At("at", {"id": "123"})
-
-        def handle(element: Element, upper_styles: Optional[List[str]] = None):
-            tag = element.tag()
-            if tag in ELEMENT_TYPE_MAP:
-                seg_cls, seg_type = ELEMENT_TYPE_MAP[tag]
-                yield seg_cls(seg_type, element.attrs.copy())
-            elif tag in ("a", "link"):
-                if element.children:
-                    yield Link(
-                        "link", {"text": element.attrs["href"], "display": element.children[0].attrs["text"]}
-                    )
-                else:
-                    yield Link("link", {"text": element.attrs["href"]})
-            elif tag == "button":
-                if element.children:
-                    yield Button("button", {"display": element.children[0].attrs["text"], **element.attrs})  # type: ignore
-                else:
-                    yield Button("button", {**element.attrs})  # type: ignore
-            elif tag in STYLE_TYPE_MAP:
-                style = STYLE_TYPE_MAP[tag]
-                for child in element.children:
-                    child_tag = child.tag()
-                    if child_tag == "text":
-                        yield Style(
-                            "style", {"text": child.attrs["text"], "styles": [*(upper_styles or []), style]}
-                        )
-                    else:
-                        yield from handle(child, [*(upper_styles or []), style])
-            elif tag in ("br", "newline"):
-                yield Br("br", {"text": "\n"})
-            elif tag in ("message", "quote"):
-                data = element.attrs.copy()
-                if element.children:
-                    data["content"] = Message.from_satori_element(element.children)
-                yield RenderMessage(element.tag(), data)  # type: ignore
-            else:
-                yield Raw("raw", {"raw": str(element)})
-
         for elem in elements:
             msg.extend(handle(elem))
 
-        return msg
+        return msg.__merge_text__()
 
     @override
     def extract_plain_text(self) -> str:
         return "".join(seg.data["text"] for seg in self if seg.is_text())
+
+    def __merge_text__(self) -> Self:
+        if not self:
+            return self
+        result = []
+        last = self[0]
+        for seg in self[1:]:
+            if last.type == "text" and seg.type == "text":
+                assert isinstance(last, Text)
+                _len = len(last.data["text"])
+                last.data["text"] += seg.data["text"]
+                for scale, styles in seg.data["styles"].items():
+                    last.data["styles"][(scale[0] + _len, scale[1] + _len)] = styles[:]
+            else:
+                result.append(last)
+                last = seg
+        result.append(last)
+        self.clear()
+        self.extend(result)
+        return self
