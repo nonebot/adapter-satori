@@ -52,7 +52,7 @@ async def test_adapter(app: App):
                         "nick": "test",
                         "joined_at": 1000 * int(datetime.now().timestamp()),
                     },
-                    "message": {"id": "abcde", "content": "<b>/tes</b>t"},
+                    "message": {"id": "abcde", "content": "/test"},
                 },
             ),
         )
