@@ -4,7 +4,7 @@ from pathlib import Path
 from base64 import b64encode
 from dataclasses import InitVar, field, dataclass
 from typing_extensions import NotRequired, override
-from typing import Any, List, Type, Union, Iterable, Optional, TypedDict
+from typing import Any, Dict, List, Tuple, Type, Union, Iterable, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -252,12 +252,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Br("br", {"text": "\n"})
 
     @staticmethod
-    def bold(text: Union[str, "Text", "Style"]) -> "Style":
+    def bold(text: Union[str, "Text"]) -> "Text":
         if isinstance(text, str):
-            return Style("style", {"text": text, "styles": ["b"]})
-        if isinstance(text, Text):
-            return Style("style", {"text": text.data["text"], "styles": ["b"]})
-        text.data["styles"].insert(0, "b")
+            return Text("text", {"text": text, "styles": {(0, len(text)): ["b"]}})
+        text.data["styles"] = {(0, len(text.data["text"])): ["b"]}
         return text
 
     @staticmethod
@@ -356,14 +354,47 @@ class Raw(MessageSegment):
 
 class TextData(TypedDict):
     text: str
+    styles: NotRequired[Dict[Tuple[int, int], List[str]]]
 
 
 @dataclass
 class Text(MessageSegment):
     data: TextData = field(default_factory=dict)  # type: ignore
 
+    def __post_init__(self):
+        styles = self.data.get("styles", {})
+        if not styles:
+            return
+        # make sure each scale is unique:
+        # e.g. 
+        # {(0, 0): ["b"], (0, 1): ["b"], (1, 2): ["b", "i"]} -> {(0, 0): ["b"], (1, 2): ["b", "i"]}
+        # {(0, 0): ["b"], (0, 2): ["i"], (1, 2): ["b", "i"]} -> {(0, 2): ["b", "i"]}
+        # {(0, 0): ["b"], (0, 2): ["b", "i"], (1, 2): ["b", "i"]} -> {(0, 2): ["b", "i"]}
+        # {(0, 1): ["b"], (1, 2): ["b", "i"], (2, 3): ["i"]} -> {(0, 0): ["b"], (1, 2): ["b", "i"], (3, 3): ["i"]}
+        
+    
+    def __merge__(self):
+        ...
+        
+
     @override
     def __str__(self) -> str:
+        if "styles" in self.data:
+            result = []
+            text = self.data["text"]
+            styles = self.data["styles"]
+            if not styles:
+                return escape(self.data["text"])
+            scales = sorted(styles.keys(), key=lambda x: x[0])
+            left = scales[0][0]
+            result.append(escape(text[:left]))
+            for scale in scales:
+                prefix = "".join(f"<{style}>" for style in styles[scale])
+                suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
+                result.append(prefix + escape(text[scale[0] : scale[1]]) + suffix)
+            right = scales[-1][1]
+            result.append(escape(text[right:]))
+            return "".join(result)
         return escape(self.data["text"])
 
     @override
@@ -487,27 +518,6 @@ class Br(MessageSegment):
     @override
     def is_text(self) -> bool:
         return True
-
-
-class StyleData(TypedDict):
-    text: str
-    styles: List[str]
-
-
-@dataclass
-class Style(MessageSegment):
-    data: StyleData = field(default_factory=dict)  # type: ignore
-
-    @override
-    def __str__(self):
-        prefix = "".join(f"<{style}>" for style in self.data["styles"])
-        suffix = "".join(f"</{style}>" for style in reversed(self.data["styles"]))
-        return f"{prefix}{escape(self.data['text'])}{suffix}"
-
-    @override
-    def is_text(self) -> bool:
-        return True
-
 
 class RenderMessageData(TypedDict):
     id: NotRequired[str]
