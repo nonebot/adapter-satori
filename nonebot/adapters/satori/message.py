@@ -90,7 +90,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
         elif raw and mime:
-            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            bd = raw if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("image need at least one of url, path and raw")
@@ -115,7 +115,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
         elif raw and mime:
-            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            bd = raw if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("audio need at least one of url, path and raw")
@@ -140,7 +140,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
         elif raw and mime:
-            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            bd = raw if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("video need at least one of url, path and raw")
@@ -165,7 +165,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         elif path:
             data = {"src": Path(path).absolute().as_uri()}
         elif raw and mime:
-            bd = raw["data"] if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
+            bd = raw if isinstance(raw, bytes) else raw.getvalue()  # type: ignore
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("file need at least one of url, path and raw")
