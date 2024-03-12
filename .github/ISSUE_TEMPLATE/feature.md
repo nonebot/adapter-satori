@@ -1,5 +1,5 @@
 ---
-name: Feature 特性请求
+name: 功能建议 (Classic)
 about: 为适配器加份菜
 title: "[Feature] "
 labels: enhancement, triage
