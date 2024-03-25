@@ -50,7 +50,8 @@ def _check_reply(
     if TYPE_CHECKING:
         assert isinstance(msg_seg, RenderMessage)
     event.reply = msg_seg  # type: ignore
-
+    if "content" not in msg_seg.data:
+        return
     author_msg = msg_seg.data["content"].get("author")
     if author_msg:
         author_seg = author_msg[0]
@@ -207,7 +208,7 @@ class Bot(BaseBot):
 
     async def _request(self, request: Request) -> Any:
         request.headers.update(self.get_authorization_header())
-
+        request.json = {k: v for k, v in request.json.items() if v is not None} if request.json else None
         try:
             response = await self.adapter.request(request)
         except Exception as e:
@@ -384,6 +385,15 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
+    async def channel_mute(self, *, channel_id: str, duration: float = 0) -> None:
+        request = Request(
+            "POST",
+            self.info.api_base / "channel.mute",
+            json={"channel_id": channel_id, "duration": duration},
+        )
+        await self._request(request)
+
+    @API
     async def user_channel_create(self, *, user_id: str, guild_id: Optional[str] = None) -> Channel:
         data = {"user_id": user_id}
         if guild_id is not None:
@@ -448,6 +458,15 @@ class Bot(BaseBot):
             "POST",
             self.info.api_base / "guild.member.kick",
             json={"guild_id": guild_id, "user_id": user_id, "permanent": permanent},
+        )
+        await self._request(request)
+
+    @API
+    async def guild_member_mute(self, *, guild_id: str, user_id: str, duration: float = 0) -> None:
+        request = Request(
+            "POST",
+            self.info.api_base / "guild.member.mute",
+            json={"guild_id": guild_id, "user_id": user_id, "duration": duration},
         )
         await self._request(request)
 
