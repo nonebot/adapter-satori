@@ -4,6 +4,21 @@ from nonebot.adapters.satori.element import parse
 from nonebot.adapters.satori.message import Message, MessageSegment
 
 
+def test_message():
+    code = """\
+<quote id="123456789" chronocat:seq="1">
+    <author id="123456789"/>
+    Hello, World!
+</quote> 
+"""
+    assert Message.from_satori_element(parse(code))[0].data["chronocat:seq"] == "1"
+    assert Message.from_satori_element(parse("<b test:aaa>1234</b>"))[0].data["test:aaa"] is True
+    assert (
+        Message.from_satori_element(parse("<img src='url' test:bbb='foo' width='123'/>"))[0].data["test:bbb"]
+        == "foo"
+    )
+
+
 @pytest.mark.asyncio
 async def test_message_rich_expr():
     raw = """\

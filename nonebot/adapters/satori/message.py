@@ -81,6 +81,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         path: Optional[Union[str, Path]] = None,
         raw: Optional[Union[bytes, BytesIO]] = None,
         mime: Optional[str] = None,
+        name: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -94,6 +95,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("image need at least one of url, path and raw")
+        if name:
+            data["title"] = name
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
@@ -106,6 +109,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         path: Optional[Union[str, Path]] = None,
         raw: Optional[Union[bytes, BytesIO]] = None,
         mime: Optional[str] = None,
+        name: Optional[str] = None,
+        poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -119,6 +124,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("audio need at least one of url, path and raw")
+        if name:
+            data["title"] = name
+        if poster:
+            data["poster"] = poster
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
@@ -131,6 +140,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         path: Optional[Union[str, Path]] = None,
         raw: Optional[Union[bytes, BytesIO]] = None,
         mime: Optional[str] = None,
+        name: Optional[str] = None,
+        poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -144,6 +155,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("video need at least one of url, path and raw")
+        if name:
+            data["title"] = name
+        if poster:
+            data["poster"] = poster
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
@@ -156,6 +171,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         path: Optional[Union[str, Path]] = None,
         raw: Optional[Union[bytes, BytesIO]] = None,
         mime: Optional[str] = None,
+        name: Optional[str] = None,
+        poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
         timeout: Optional[str] = None,
@@ -169,6 +186,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data = {"src": f"data:{mime};base64,{b64encode(bd).decode()}"}
         else:
             raise ValueError("file need at least one of url, path and raw")
+        if name:
+            data["title"] = name
+        if poster:
+            data["poster"] = poster
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
@@ -206,12 +227,12 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def author(
         user_id: str,
-        nickname: Optional[str] = None,
+        name: Optional[str] = None,
         avatar: Optional[str] = None,
     ) -> "Author":
         data = {"id": user_id}
-        if nickname:
-            data["nickname"] = nickname
+        if name:
+            data["name"] = name
         if avatar:
             data["avatar"] = avatar
         return Author("author", data)  # type: ignore
@@ -461,6 +482,7 @@ class Link(MessageSegment):
 
 class ImageData(TypedDict):
     src: str
+    title: NotRequired[str]
     cache: NotRequired[bool]
     timeout: NotRequired[str]
     width: NotRequired[int]
@@ -479,6 +501,9 @@ class Image(MessageSegment):
 
 class AudioData(TypedDict):
     src: str
+    title: NotRequired[str]
+    duration: NotRequired[float]
+    poster: NotRequired[str]
     cache: NotRequired[bool]
     timeout: NotRequired[str]
 
@@ -495,6 +520,11 @@ class Audio(MessageSegment):
 
 class VideoData(TypedDict):
     src: str
+    title: NotRequired[str]
+    width: NotRequired[int]
+    height: NotRequired[int]
+    duration: NotRequired[float]
+    poster: NotRequired[str]
     cache: NotRequired[bool]
     timeout: NotRequired[str]
 
@@ -511,6 +541,8 @@ class Video(MessageSegment):
 
 class FileData(TypedDict):
     src: str
+    title: NotRequired[str]
+    poster: NotRequired[str]
     cache: NotRequired[bool]
     timeout: NotRequired[str]
 
@@ -560,7 +592,7 @@ class RenderMessage(MessageSegment):
 
 class AuthorData(TypedDict):
     id: str
-    nickname: NotRequired[str]
+    name: NotRequired[str]
     avatar: NotRequired[str]
 
 
@@ -658,6 +690,7 @@ def handle(element: Element, upper_styles: Optional[List[str]] = None):
                 yield Text(
                     "text",
                     {
+                        **element.attrs,  # type: ignore
                         "text": child.attrs["text"],
                         "styles": {(0, len(child.attrs["text"])): [*(upper_styles or []), style]},
                     },
@@ -683,12 +716,14 @@ class Message(BaseMessage[MessageSegment]):
 
     @override
     def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
-        result = super().__add__(MessageSegment.text(other) if isinstance(other, str) else other)
+        result = self.copy()
+        result += MessageSegment.text(other) if isinstance(other, str) else other
         return result.__merge_text__()
 
     @override
     def __radd__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
-        result = super().__radd__(MessageSegment.text(other) if isinstance(other, str) else other)
+        result = self.__class__(MessageSegment.text(other) if isinstance(other, str) else other)
+        result = result + self
         return result.__merge_text__()
 
     @staticmethod

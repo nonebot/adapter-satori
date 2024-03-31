@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-satori"
-version = "0.10.2"
+version = "0.10.3"
 description = "Satori Protocol Adapter for Nonebot2"
 authors = [
     {name = "RF-Tar-Railt",email = "rf_tar_railt@qq.com"},
@@ -42,6 +42,8 @@ includes = ["nonebot"]
 
 [tool.pdm.scripts]
 test = "pytest -W ignore -s"
+format = { composite = ["isort ./","black ./","ruff check ./"] }
+
 
 [tool.black]
 line-length = 110
@@ -64,7 +66,7 @@ target-version = "py38"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "UP", "C", "T", "Q"]
-ignore = ["E402", "F403", "F405", "C901", "UP037"]
+ignore = ["E402", "F403", "F405", "C901", "UP037", "W291"]
 
 [tool.pyright]
 pythonPlatform = "All"
