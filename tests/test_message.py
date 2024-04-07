@@ -17,6 +17,9 @@ def test_message():
         Message.from_satori_element(parse("<img src='url' test:bbb='foo' width='123'/>"))[0].data["test:bbb"]
         == "foo"
     )
+    assert Message.from_satori_element(
+        parse("<chronocat:face id='265' name='[辣眼睛]' platform='chronocat'/>")
+    )[0].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat", "_children": []}
 
 
 @pytest.mark.asyncio

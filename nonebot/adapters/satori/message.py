@@ -3,7 +3,7 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
 from dataclasses import InitVar, field, dataclass
-from typing_extensions import Self, NotRequired, override
+from typing_extensions import Self, Required, NotRequired, override
 from typing import Any, Dict, List, Type, Tuple, Union, Iterable, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
@@ -630,6 +630,34 @@ class Button(MessageSegment):
         return f'<button {" ".join(attr)} />'
 
 
+class CustomData(TypedDict, total=False):
+    _children: Required[List["MessageSegment"]]
+
+
+@dataclass
+class Custom(MessageSegment):
+    data: CustomData = field(default_factory=dict)  # type: ignore
+
+    def __str__(self) -> str:
+        def _attr(key: str, value: Any):
+            if value is None:
+                return ""
+            key = param_case(key)
+            if value is True:
+                return f" {key}"
+            if value is False:
+                return f" no-{key}"
+            return f' {key}="{escape(str(value), True)}"'
+
+        attrs = "".join(_attr(k, v) for k, v in self.data.items() if k != "_children")
+        if self.type == "text" and "text" in self.data:
+            return escape(self.data["text"])
+        inner = "".join(str(c) for c in self.data["_children"])
+        if not inner:
+            return f"<{self.type}{attrs}/>"
+        return f"<{self.type}{attrs}>{inner}</{self.type}>"
+
+
 ELEMENT_TYPE_MAP = {
     "text": (Text, "text"),
     "at": (At, "at"),
@@ -705,7 +733,10 @@ def handle(element: Element, upper_styles: Optional[List[str]] = None):
             data["content"] = Message.from_satori_element(element.children)
         yield RenderMessage(tag, data)  # type: ignore
     else:
-        yield Raw("raw", {"raw": str(element)})
+        custom = Custom(element.tag(), {**element.attrs, "_children": []})  # type: ignore
+        for child in element.children:
+            custom.data["_children"].extend(handle(child))
+        yield custom
 
 
 class Message(BaseMessage[MessageSegment]):

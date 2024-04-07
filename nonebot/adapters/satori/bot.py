@@ -9,6 +9,7 @@ from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
 
+from .element import parse
 from .utils import API, log
 from .config import ClientInfo
 from .event import Event, MessageEvent
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from .adapter import Adapter
 
 
-def _check_reply(
+async def _check_reply(
     bot: "Bot",
     event: MessageEvent,
 ) -> None:
@@ -47,24 +48,30 @@ def _check_reply(
         return
 
     msg_seg = message[index]
+    del message[index]
     if TYPE_CHECKING:
         assert isinstance(msg_seg, RenderMessage)
     event.reply = msg_seg  # type: ignore
-    if "content" not in msg_seg.data:
-        return
-    author_msg = msg_seg.data["content"].get("author")
-    if author_msg:
+    if "content" in msg_seg.data and (author_msg := msg_seg.data["content"].get("author")):
         author_seg = author_msg[0]
         if TYPE_CHECKING:
             assert isinstance(author_seg, Author)
         event.to_me = author_seg.data.get("id") == bot.self_id
-
-    del message[index]
+    elif "id" not in event.reply.data or not event.channel:
+        return
+    else:
+        msg = await bot.message_get(channel_id=event.channel.id, message_id=event.reply.data["id"])
+        event.reply.data["content"] = Message.from_satori_element(parse(msg.content))
+        if msg.user and msg.user.id == bot.self_id:
+            event.to_me = True
+        else:
+            return
     if (
         len(message) > index
         and message[index].type == "at"
         and message[index].data.get("id") == str(bot.self_info.id)
     ):
+        event.to_me = True
         del message[index]
     if len(message) > index and message[index].type == "text":
         message[index].data["text"] = message[index].data["text"].lstrip()
@@ -183,7 +190,7 @@ class Bot(BaseBot):
 
     async def handle_event(self, event: Event) -> None:
         if isinstance(event, MessageEvent):
-            _check_reply(self, event)
+            await _check_reply(self, event)
             _check_at_me(self, event)
             _check_nickname(self, event)
         await handle_event(self, event)
