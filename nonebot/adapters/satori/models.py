@@ -130,12 +130,6 @@ class Login(BaseModel):
             extra = "allow"
 
 
-class OuterLogin(Login):
-    user: User
-    self_id: str
-    platform: str
-
-
 class ArgvInteraction(BaseModel):
     name: str
     arguments: list
@@ -165,7 +159,7 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: List[OuterLogin]
+    logins: List[Login]
 
 
 class IdentifyPayload(Payload):

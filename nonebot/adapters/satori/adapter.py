@@ -136,7 +136,7 @@ class Adapter(BaseAdapter):
             if login.status != LoginStatus.ONLINE:
                 continue
             if login.self_id not in self.bots:
-                bot = Bot(self, login.self_id, login.platform, info)
+                bot = Bot(self, login.self_id, login.platform or "satori", info)
                 self.bot_connect(bot)
                 log(
                     "INFO",
@@ -144,7 +144,8 @@ class Adapter(BaseAdapter):
                 )
             else:
                 bot = self.bots[login.self_id]
-            bot.on_ready(login.user)
+            if login.user:
+                bot.on_ready(login.user)
         if not self.bots:
             log("WARNING", "No bots connected!")
             return
