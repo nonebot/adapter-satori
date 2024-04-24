@@ -56,20 +56,20 @@ async def _check_reply(
         author_seg = author_msg[0]
         if TYPE_CHECKING:
             assert isinstance(author_seg, Author)
-        event.to_me = author_seg.data.get("id") == bot.self_id
+        event.to_me = author_seg.data.get("id") == bot.get_self_id()
     elif "id" not in event.reply.data or not event.channel:
         return
     else:
         msg = await bot.message_get(channel_id=event.channel.id, message_id=event.reply.data["id"])
         event.reply.data["content"] = Message.from_satori_element(parse(msg.content))
-        if msg.user and msg.user.id == bot.self_id:
+        if msg.user and msg.user.id == bot.get_self_id():
             event.to_me = True
         else:
             return
     if (
         len(message) > index
         and message[index].type == "at"
-        and message[index].data.get("id") == str(bot.self_info.id)
+        and message[index].data.get("id") == str(bot.get_self_id())
     ):
         event.to_me = True
         del message[index]
@@ -86,7 +86,7 @@ def _check_at_me(
     event: MessageEvent,
 ):
     def _is_at_me_seg(segment: MessageSegment) -> bool:
-        return segment.type == "at" and segment.data.get("id") == str(bot.self_info.id)
+        return segment.type == "at" and segment.data.get("id") == str(bot.get_self_id())
 
     message = event.get_message()
 
@@ -161,6 +161,11 @@ class Bot(BaseBot):
 
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
+
+    def get_self_id(self):
+        if self._self_info:
+            return self._self_info.id
+        return self.self_id
 
     @property
     def ready(self) -> bool:

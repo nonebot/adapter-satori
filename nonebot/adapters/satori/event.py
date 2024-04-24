@@ -4,7 +4,7 @@ from typing_extensions import override
 from typing import TYPE_CHECKING, Dict, Type, TypeVar, Optional
 
 from nonebot.utils import escape_tag
-from nonebot.compat import PYDANTIC_V2, model_dump, type_validate_python
+from nonebot.compat import model_dump, type_validate_python
 
 from nonebot.adapters import Event as BaseEvent
 
@@ -59,7 +59,7 @@ class Event(BaseEvent, SatoriEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(str(self.dict()))
+        return escape_tag(str(model_dump(self)))
 
     @override
     def get_message(self) -> Message:
@@ -244,14 +244,10 @@ class MessageEvent(Event):
     def get_message(self) -> Message:
         return self._message
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def generate_message(cls, values):
-        if PYDANTIC_V2:
-            values._message = Message.from_satori_element(parse(values.message.content))
-            values.original_message = deepcopy(values._message)
-        else:
-            values["_message"] = Message.from_satori_element(parse(values["message"].content))
-            values["original_message"] = deepcopy(values["_message"])
+        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+        values["original_message"] = deepcopy(values["_message"])
         return values
 
     @property
@@ -397,12 +393,9 @@ class ReactionEvent(NoticeEvent):
     def get_session_id(self) -> str:
         return f"{self.channel.id}/{self.user.id}"
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def generate_message(cls, values):
-        if PYDANTIC_V2:
-            values._message = Message.from_satori_element(parse(values.message.content))
-        else:
-            values["_message"] = Message.from_satori_element(parse(values["message"].cotent))
+        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
         return values
 
     @property
@@ -521,18 +514,13 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
     def get_event_description(self) -> str:
         return escape_tag(f"Command interacted with {self.argv}")
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def generate_message(cls, values):
-        argv: ArgvInteraction = values.argv if PYDANTIC_V2 else values["argv"]
-        cmd = argv.name
-        if argv.arguments:
-            cmd += " ".join(argv.arguments)
-        if PYDANTIC_V2:
-            values._message = Message(cmd)
-            values.original_message = deepcopy(values._message)
-        else:
-            values["_message"] = Message(cmd)
-            values["original_message"] = deepcopy(values["_message"])
+        cmd = values["argv"]["name"]
+        if values["argv"].get("arguments", []):
+            cmd += " ".join(values["argv"]["arguments"])
+        values["_message"] = Message(cmd)
+        values["original_message"] = deepcopy(values["_message"])
         return values
 
     def convert(self):
@@ -576,14 +564,10 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
     to_me: bool = False
     reply: Optional[RenderMessage] = None
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def generate_message(cls, values):
-        if PYDANTIC_V2:
-            values._message = Message.from_satori_element(parse(values.message.content))
-            values.original_message = deepcopy(values._message)
-        else:
-            values["_message"] = Message.from_satori_element(parse(values["message"].content))
-            values["original_message"] = deepcopy(values["_message"])
+        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+        values["original_message"] = deepcopy(values["_message"])
         return values
 
     @override
