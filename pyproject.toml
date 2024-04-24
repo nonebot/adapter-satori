@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-satori"
-version = "0.10.5"
+version = "0.11.0"
 description = "Satori Protocol Adapter for Nonebot2"
 authors = [
     {name = "RF-Tar-Railt",email = "rf_tar_railt@qq.com"},
@@ -70,7 +70,7 @@ ignore = ["E402", "F403", "F405", "C901", "UP037", "W291"]
 
 [tool.pyright]
 pythonPlatform = "All"
-pythonVersion = "3.8"
+pythonVersion = "3.9"
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
