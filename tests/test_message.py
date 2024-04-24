@@ -19,7 +19,7 @@ def test_message():
     )
     assert Message.from_satori_element(
         parse("<chronocat:face id='265' name='[辣眼睛]' platform='chronocat'/>")
-    )[0].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat", "_children": []}
+    )[0].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat"}
 
 
 @pytest.mark.asyncio
@@ -43,3 +43,17 @@ async def test_message_rich_expr():
     assert str(msg4) == '<b>123<i>456</i></b><img src="url"/><b><i>789</i>abc</b>'
     assert Message.from_satori_element(parse(str(msg4))) == msg4
     assert msg4.extract_plain_text() == "123456789abc"
+
+
+def test_message_fallback():
+    code = """\
+<video src="http://aa.com/a.mp4">
+  当前平台不支持发送视频，请在
+  <a href="http://aa.com/a.mp4">这里</a>
+  观看视频！
+</video>
+"""
+    msg = Message.from_satori_element(parse(code))
+    assert str(msg[0].children) == '当前平台不支持发送视频，请在<a href="http://aa.com/a.mp4">这里</a>观看视频！'
+    assert msg.extract_plain_text() == "当前平台不支持发送视频，请在这里观看视频！"
+    assert list(msg.query("link"))[0].data["text"] == "http://aa.com/a.mp4"
