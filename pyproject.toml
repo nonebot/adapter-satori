@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-satori"
-version = "0.11.0"
+version = "0.11.1"
 description = "Satori Protocol Adapter for Nonebot2"
 authors = [
     {name = "RF-Tar-Railt",email = "rf_tar_railt@qq.com"},
@@ -74,3 +74,4 @@ pythonVersion = "3.9"
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
+defineConstant = { PYDANTIC_V2 = true }

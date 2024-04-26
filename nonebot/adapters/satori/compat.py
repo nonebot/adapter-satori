@@ -1,14 +1,44 @@
-from typing import Literal, overload
+from typing import Literal, Optional, overload
 
 from nonebot.compat import PYDANTIC_V2
 
-__all__ = ("model_validator",)
+__all__ = ("model_validator", "field_validator")
 
 
 if PYDANTIC_V2:
     from pydantic import model_validator as model_validator
+    from pydantic import field_validator as field_validator
 else:
-    from pydantic import root_validator
+    from pydantic import root_validator, validator
+
+    @overload
+    def field_validator(
+        __field: str,
+        *fields: str,
+        mode: Literal['before'],
+        check_fields: Optional[bool] = None,
+    ):
+        ...
+
+    @overload
+    def field_validator(
+        __field: str,
+        *fields: str,
+        mode: Literal['after'],
+        check_fields: Optional[bool] = None,
+    ):
+        ...
+
+    def field_validator(
+        __field: str,
+        *fields: str,
+        mode: Literal['before', 'after'],
+        check_fields: Optional[bool] = None,
+    ):
+        if mode == "before":
+            return validator(__field, *fields, pre=True, check_fields=check_fields, allow_reuse=True)
+        else:
+            return validator(__field, *fields, check_fields=check_fields, allow_reuse=True)
 
     @overload
     def model_validator(*, mode: Literal["before"]): ...

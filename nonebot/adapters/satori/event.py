@@ -15,7 +15,7 @@ from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import InnerMessage as SatoriMessage
 from .models import ArgvInteraction, ButtonInteraction
-from .models import Guild, Login, Channel, ChannelType, InnerMember
+from .models import Guild, Login, Channel, ChannelType, Member
 
 E = TypeVar("E", bound="Event")
 
@@ -169,14 +169,14 @@ class GuildMemberRemovedEvent(GuildMemberEvent):
 class GuildMemberRequestEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_REQUEST
 
-    member: InnerMember
+    member: Member
 
 
 @register_event_class
 class GuildMemberUpdatedEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_UPDATED
 
-    member: InnerMember
+    member: Member
 
 
 class GuildRoleEvent(GuildEvent):
@@ -306,7 +306,7 @@ class PrivateMessageEvent(MessageEvent):
 
 
 class PublicMessageEvent(MessageEvent):
-    member: InnerMember
+    member: Member
 
     @override
     def get_session_id(self) -> str:

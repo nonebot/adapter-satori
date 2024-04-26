@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from nonebot.message import handle_event
 from nonebot.drivers import Request, Response
-from nonebot.compat import type_validate_python
+from nonebot.compat import type_validate_python, model_dump
 
 from nonebot.adapters import Bot as BaseBot
 
@@ -15,7 +15,7 @@ from .config import ClientInfo
 from .event import Event, MessageEvent
 from .models import InnerMessage as SatoriMessage
 from .message import Author, Message, RenderMessage, MessageSegment
-from .models import Role, User, Guild, Login, Channel, PageResult, OuterMember
+from .models import Role, User, Guild, Login, Channel, PageResult, Member
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -52,7 +52,7 @@ async def _check_reply(
     if TYPE_CHECKING:
         assert isinstance(msg_seg, RenderMessage)
     event.reply = msg_seg  # type: ignore
-    if "content" in msg_seg.data and (author_msg := msg_seg.data["content"].get("author")):
+    if "content" in msg_seg.data and (author_msg := msg_seg.children.get("author")):
         author_seg = author_msg[0]
         if TYPE_CHECKING:
             assert isinstance(author_seg, Author)
@@ -61,7 +61,7 @@ async def _check_reply(
         return
     else:
         msg = await bot.message_get(channel_id=event.channel.id, message_id=event.reply.data["id"])
-        event.reply.data["content"] = Message.from_satori_element(parse(msg.content))
+        event.reply._children = Message.from_satori_element(parse(msg.content))
         if msg.user and msg.user.id == bot.get_self_id():
             event.to_me = True
         else:
@@ -369,7 +369,7 @@ class Bot(BaseBot):
         request = Request(
             "POST",
             self.info.api_base / "channel.create",
-            json={"guild_id": guild_id, "data": data.dict()},
+            json={"guild_id": guild_id, "data": model_dump(data)},
         )
         return type_validate_python(Channel, await self._request(request))
 
@@ -383,7 +383,7 @@ class Bot(BaseBot):
         request = Request(
             "POST",
             self.info.api_base / "channel.update",
-            json={"channel_id": channel_id, "data": data.dict()},
+            json={"channel_id": channel_id, "data": model_dump(data)},
         )
         await self._request(request)
 
@@ -447,22 +447,22 @@ class Bot(BaseBot):
     @API
     async def guild_member_list(
         self, *, guild_id: str, next_token: Optional[str] = None
-    ) -> PageResult[OuterMember]:
+    ) -> PageResult[Member]:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.list",
             json={"guild_id": guild_id, "next": next_token},
         )
-        return type_validate_python(PageResult[OuterMember], await self._request(request))
+        return type_validate_python(PageResult[Member], await self._request(request))
 
     @API
-    async def guild_member_get(self, *, guild_id: str, user_id: str) -> OuterMember:
+    async def guild_member_get(self, *, guild_id: str, user_id: str) -> Member:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.get",
             json={"guild_id": guild_id, "user_id": user_id},
         )
-        return type_validate_python(OuterMember, await self._request(request))
+        return type_validate_python(Member, await self._request(request))
 
     @API
     async def guild_member_kick(self, *, guild_id: str, user_id: str, permanent: bool = False) -> None:
@@ -528,7 +528,7 @@ class Bot(BaseBot):
         request = Request(
             "POST",
             self.info.api_base / "guild.role.create",
-            json={"guild_id": guild_id, "role": role.dict()},
+            json={"guild_id": guild_id, "role": model_dump(role)},
         )
         return type_validate_python(Role, await self._request(request))
 
@@ -543,7 +543,7 @@ class Bot(BaseBot):
         request = Request(
             "POST",
             self.info.api_base / "guild.role.update",
-            json={"guild_id": guild_id, "role_id": role_id, "role": role.dict()},
+            json={"guild_id": guild_id, "role_id": role_id, "role": model_dump(role)},
         )
         await self._request(request)
 

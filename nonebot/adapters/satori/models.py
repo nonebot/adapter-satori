@@ -2,11 +2,11 @@ from enum import IntEnum
 from datetime import datetime
 from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
 
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 from .utils import log
-from .compat import model_validator
+from .compat import model_validator, field_validator
 
 
 class ChannelType(IntEnum):
@@ -61,14 +61,14 @@ class User(BaseModel):
             extra = "allow"
 
 
-class InnerMember(BaseModel):
+class Member(BaseModel):
     user: Optional[User] = None
     name: Optional[str] = None
     nick: Optional[str] = None
     avatar: Optional[str] = None
     joined_at: Optional[datetime] = None
 
-    @validator("joined_at", pre=True)
+    @field_validator("joined_at", mode="before")
     def parse_joined_at(cls, v):
         if v is None:
             return None
@@ -87,11 +87,6 @@ class InnerMember(BaseModel):
 
         class Config:
             extra = "allow"
-
-
-class OuterMember(InnerMember):
-    user: User
-    joined_at: datetime
 
 
 class Role(BaseModel):
@@ -185,7 +180,7 @@ class InnerMessage(BaseModel):
     content: str
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
-    member: Optional[InnerMember] = None
+    member: Optional[Member] = None
     user: Optional[User] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -200,7 +195,7 @@ class InnerMessage(BaseModel):
         )
         return {**values, "content": "Unknown"}
 
-    @validator("created_at", pre=True)
+    @field_validator("created_at", mode="before")
     def parse_created_at(cls, v):
         if v is None:
             return None
@@ -212,7 +207,7 @@ class InnerMessage(BaseModel):
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
-    @validator("updated_at", pre=True)
+    @field_validator("updated_at", mode="before")
     def parse_updated_at(cls, v):
         if v is None:
             return None
@@ -235,7 +230,6 @@ class InnerMessage(BaseModel):
 
 class OuterMessage(InnerMessage):
     channel: Channel
-    guild: Guild
     user: User
 
 
@@ -250,13 +244,13 @@ class Event(BaseModel):
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
     login: Optional[Login] = None
-    member: Optional[InnerMember] = None
+    member: Optional[Member] = None
     message: Optional[InnerMessage] = None
     operator: Optional[User] = None
     role: Optional[Role] = None
     user: Optional[User] = None
 
-    @validator("timestamp", pre=True)
+    @field_validator("timestamp", mode="before")
     def parse_timestamp(cls, v):
         if v is None:
             return None
