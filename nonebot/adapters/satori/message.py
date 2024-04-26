@@ -223,9 +223,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             data["id"] = mid
         if forward is not None:
             data["forward"] = forward
-        if content:
-            data["content"] = content
-        return RenderMessage("message", data)  # type: ignore
+        return RenderMessage("message", data)(content or [])  # type: ignore
 
     @staticmethod
     def quote(
@@ -236,9 +234,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         data = {"id": mid}
         if forward is not None:
             data["forward"] = forward  # type: ignore
-        if content:
-            data["content"] = content  # type: ignore
-        return RenderMessage("quote", data)  # type: ignore
+        return RenderMessage("quote", data)(content or [])  # type: ignore
 
     @staticmethod
     def author(
