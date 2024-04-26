@@ -6,7 +6,7 @@ from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 from .utils import log
-from .compat import model_validator, field_validator
+from .compat import field_validator, model_validator
 
 
 class ChannelType(IntEnum):

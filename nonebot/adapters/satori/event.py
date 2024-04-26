@@ -15,7 +15,7 @@ from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import InnerMessage as SatoriMessage
 from .models import ArgvInteraction, ButtonInteraction
-from .models import Guild, Login, Channel, ChannelType, Member
+from .models import Guild, Login, Member, Channel, ChannelType
 
 E = TypeVar("E", bound="Event")
 

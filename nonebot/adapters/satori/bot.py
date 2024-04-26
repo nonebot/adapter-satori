@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional
 
 from nonebot.message import handle_event
 from nonebot.drivers import Request, Response
-from nonebot.compat import type_validate_python, model_dump
+from nonebot.compat import model_dump, type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
 
@@ -15,7 +15,7 @@ from .config import ClientInfo
 from .event import Event, MessageEvent
 from .models import InnerMessage as SatoriMessage
 from .message import Author, Message, RenderMessage, MessageSegment
-from .models import Role, User, Guild, Login, Channel, PageResult, Member
+from .models import Role, User, Guild, Login, Member, Channel, PageResult
 from .exception import (
     ActionFailed,
     NetworkError,

@@ -6,33 +6,31 @@ __all__ = ("model_validator", "field_validator")
 
 
 if PYDANTIC_V2:
-    from pydantic import model_validator as model_validator
     from pydantic import field_validator as field_validator
+    from pydantic import model_validator as model_validator
 else:
-    from pydantic import root_validator, validator
+    from pydantic import validator, root_validator
 
     @overload
     def field_validator(
         __field: str,
         *fields: str,
-        mode: Literal['before'],
+        mode: Literal["before"],
         check_fields: Optional[bool] = None,
-    ):
-        ...
+    ): ...
 
     @overload
     def field_validator(
         __field: str,
         *fields: str,
-        mode: Literal['after'],
+        mode: Literal["after"],
         check_fields: Optional[bool] = None,
-    ):
-        ...
+    ): ...
 
     def field_validator(
         __field: str,
         *fields: str,
-        mode: Literal['before', 'after'],
+        mode: Literal["before", "after"],
         check_fields: Optional[bool] = None,
     ):
         if mode == "before":
