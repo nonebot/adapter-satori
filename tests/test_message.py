@@ -21,6 +21,9 @@ def test_message():
         parse("<chronocat:face id='265' name='[辣眼睛]' platform='chronocat'/>")
     )[0].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat"}
 
+    test_message1 = MessageSegment(type="chronocat:face", data={"id": 12}) + "\n" + "Hello Yoshi"
+    assert str(test_message1) == '<chronocat:face id="12"/>\nHello Yoshi'
+
 
 @pytest.mark.asyncio
 async def test_message_rich_expr():

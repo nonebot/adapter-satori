@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Type, Tuple, Union, Iterable, Optional, Type
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .element import Element, parse, escape, param_case
+from .element import Element, escape, param_case
 
 
 @dataclass
@@ -735,6 +735,15 @@ class Message(BaseMessage[MessageSegment]):
     def get_segment_class(cls) -> Type[MessageSegment]:
         return MessageSegment
 
+    def __init__(
+        self,
+        message: Union[str, None, Iterable[MessageSegment], MessageSegment] = None,
+    ):
+        if isinstance(message, str):
+            super().__init__(MessageSegment.raw(message))
+        else:
+            super().__init__(message)
+
     @override
     def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
         result = self.copy()
@@ -749,7 +758,7 @@ class Message(BaseMessage[MessageSegment]):
     @staticmethod
     @override
     def _construct(msg: str) -> Iterable[MessageSegment]:
-        yield from Message.from_satori_element(parse(msg))
+        yield Text(msg)
 
     @classmethod
     def from_satori_element(cls, elements: List[Element]) -> "Message":
