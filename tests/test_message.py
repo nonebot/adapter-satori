@@ -12,7 +12,7 @@ def test_message():
 </quote> 
 """
     assert Message.from_satori_element(parse(code))[0].data["chronocat:seq"] == "1"
-    assert Message.from_satori_element(parse("<b test:aaa>1234</b>"))[0].data["test:aaa"] is True
+    assert Message("<b test:aaa>1234</b>")[0].data["test:aaa"] is True
     assert (
         Message.from_satori_element(parse("<img src='url' test:bbb='foo' width='123'/>"))[0].data["test:bbb"]
         == "foo"

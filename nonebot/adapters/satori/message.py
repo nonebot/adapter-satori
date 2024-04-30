@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Type, Tuple, Union, Iterable, Optional, Type
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .element import Element, escape, param_case
+from .element import Element, parse, escape, param_case
 
 
 @dataclass
@@ -740,7 +740,7 @@ class Message(BaseMessage[MessageSegment]):
         message: Union[str, None, Iterable[MessageSegment], MessageSegment] = None,
     ):
         if isinstance(message, str):
-            super().__init__(MessageSegment.raw(message))
+            super().__init__(self.from_satori_element(parse(message)))
         else:
             super().__init__(message)
 
