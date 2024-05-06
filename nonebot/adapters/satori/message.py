@@ -758,7 +758,7 @@ class Message(BaseMessage[MessageSegment]):
     @staticmethod
     @override
     def _construct(msg: str) -> Iterable[MessageSegment]:
-        yield Text(msg)
+        yield MessageSegment.text(msg)
 
     @classmethod
     def from_satori_element(cls, elements: List[Element]) -> "Message":
