@@ -100,7 +100,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         name: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
-        timeout: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> "Image":
         if url:
             data = {"src": url}
@@ -116,7 +116,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
-            data["timeout"] = timeout
+            data["timeout"] = timeout  # type: ignore
         return Image("img", data, extra=extra)  # type: ignore
 
     @staticmethod
@@ -129,7 +129,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
-        timeout: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> "Audio":
         if url:
             data = {"src": url}
@@ -147,7 +147,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
-            data["timeout"] = timeout
+            data["timeout"] = timeout  # type: ignore
         return Audio("audio", data, extra=extra)  # type: ignore
 
     @staticmethod
@@ -160,7 +160,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
-        timeout: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> "Video":
         if url:
             data = {"src": url}
@@ -178,7 +178,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
-            data["timeout"] = timeout
+            data["timeout"] = timeout  # type: ignore
         return Video("video", data, extra=extra)  # type: ignore
 
     @staticmethod
@@ -191,7 +191,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
-        timeout: Optional[str] = None,
+        timeout: Optional[int] = None,
     ) -> "File":
         if url:
             data = {"src": url}
@@ -209,7 +209,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         if cache is not None:
             data["cache"] = cache  # type: ignore
         if timeout is not None:
-            data["timeout"] = timeout
+            data["timeout"] = timeout  # type: ignore
         return File("file", data, extra=extra)  # type: ignore
 
     @staticmethod
@@ -499,7 +499,7 @@ class ImageData(TypedDict):
     src: str
     title: NotRequired[str]
     cache: NotRequired[bool]
-    timeout: NotRequired[str]
+    timeout: NotRequired[int]
     width: NotRequired[int]
     height: NotRequired[int]
 
@@ -512,6 +512,17 @@ class Image(MessageSegment):
     def __post_init__(self, extra: Optional[dict]):
         if extra:
             self.data.update(extra)  # type: ignore
+        if "cache" in self.data:
+            if str(self.data["cache"]) == "True":
+                self.data["cache"] = True
+            else:
+                self.data["cache"] = False
+        if "width" in self.data:
+            self.data["width"] = int(self.data["width"])
+        if "height" in self.data:
+            self.data["height"] = int(self.data["height"])
+        if "timeout" in self.data:
+            self.data["timeout"] = int(self.data["timeout"])
 
 
 class AudioData(TypedDict):
@@ -520,7 +531,7 @@ class AudioData(TypedDict):
     duration: NotRequired[float]
     poster: NotRequired[str]
     cache: NotRequired[bool]
-    timeout: NotRequired[str]
+    timeout: NotRequired[int]
 
 
 @dataclass
@@ -531,6 +542,15 @@ class Audio(MessageSegment):
     def __post_init__(self, extra: Optional[dict]):
         if extra:
             self.data.update(extra)  # type: ignore
+        if "cache" in self.data:
+            if str(self.data["cache"]) == "True":
+                self.data["cache"] = True
+            else:
+                self.data["cache"] = False
+        if "duration" in self.data:
+            self.data["duration"] = float(self.data["duration"])
+        if "timeout" in self.data:
+            self.data["timeout"] = int(self.data["timeout"])
 
 
 class VideoData(TypedDict):
@@ -541,7 +561,7 @@ class VideoData(TypedDict):
     duration: NotRequired[float]
     poster: NotRequired[str]
     cache: NotRequired[bool]
-    timeout: NotRequired[str]
+    timeout: NotRequired[int]
 
 
 @dataclass
@@ -552,6 +572,19 @@ class Video(MessageSegment):
     def __post_init__(self, extra: Optional[dict]):
         if extra:
             self.data.update(extra)  # type: ignore
+        if "cache" in self.data:
+            if str(self.data["cache"]) == "True":
+                self.data["cache"] = True
+            else:
+                self.data["cache"] = False
+        if "width" in self.data:
+            self.data["width"] = int(self.data["width"])
+        if "height" in self.data:
+            self.data["height"] = int(self.data["height"])
+        if "duration" in self.data:
+            self.data["duration"] = float(self.data["duration"])
+        if "timeout" in self.data:
+            self.data["timeout"] = int(self.data["timeout"])
 
 
 class FileData(TypedDict):
@@ -559,7 +592,7 @@ class FileData(TypedDict):
     title: NotRequired[str]
     poster: NotRequired[str]
     cache: NotRequired[bool]
-    timeout: NotRequired[str]
+    timeout: NotRequired[int]
 
 
 @dataclass
@@ -570,6 +603,13 @@ class File(MessageSegment):
     def __post_init__(self, extra: Optional[dict]):
         if extra:
             self.data.update(extra)  # type: ignore
+        if "cache" in self.data:
+            if str(self.data["cache"]) == "True":
+                self.data["cache"] = True
+            else:
+                self.data["cache"] = False
+        if "timeout" in self.data:
+            self.data["timeout"] = int(self.data["timeout"])
 
 
 class Br(MessageSegment):
@@ -590,6 +630,13 @@ class RenderMessageData(TypedDict):
 @dataclass
 class RenderMessage(MessageSegment):
     data: RenderMessageData = field(default_factory=dict)  # type: ignore
+
+    def __post_init__(self):
+        if "forward" in self.data:
+            if str(self.data["forward"]) == "True":
+                self.data["forward"] = True
+            else:
+                self.data["forward"] = False
 
     @property
     def content(self) -> Optional["Message"]:
