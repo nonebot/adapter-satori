@@ -175,7 +175,7 @@ class PongPayload(Payload):
     op: Literal[Opcode.PONG] = Field(Opcode.PONG)
 
 
-class InnerMessage(BaseModel):
+class MessageObject(BaseModel):
     id: str
     content: str
     channel: Optional[Channel] = None
@@ -228,11 +228,6 @@ class InnerMessage(BaseModel):
             extra = "allow"
 
 
-class OuterMessage(InnerMessage):
-    channel: Channel
-    user: User
-
-
 class Event(BaseModel):
     id: int
     type: str
@@ -245,7 +240,7 @@ class Event(BaseModel):
     guild: Optional[Guild] = None
     login: Optional[Login] = None
     member: Optional[Member] = None
-    message: Optional[InnerMessage] = None
+    message: Optional[MessageObject] = None
     operator: Optional[User] = None
     role: Optional[Role] = None
     user: Optional[User] = None

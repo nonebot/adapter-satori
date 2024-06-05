@@ -13,7 +13,7 @@ from .element import parse
 from .utils import API, log
 from .config import ClientInfo
 from .event import Event, MessageEvent
-from .models import InnerMessage as SatoriMessage
+from .models import MessageObject as SatoriMessage
 from .message import Author, Message, RenderMessage, MessageSegment
 from .models import Role, User, Guild, Login, Member, Channel, PageResult
 from .exception import (

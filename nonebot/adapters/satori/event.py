@@ -13,7 +13,7 @@ from .models import Role, User
 from .compat import model_validator
 from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
-from .models import InnerMessage as SatoriMessage
+from .models import MessageObject as SatoriMessage
 from .models import ArgvInteraction, ButtonInteraction
 from .models import Guild, Login, Member, Channel, ChannelType
 
@@ -334,7 +334,7 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id})"
+            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}]"
             f": {self.get_message()!r}"
         )
@@ -351,7 +351,7 @@ class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id})"
+            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}] deleted"
         )
 
@@ -371,7 +371,7 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id})"
+            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}] updated"
             f": {self.get_message()!r}"
         )
