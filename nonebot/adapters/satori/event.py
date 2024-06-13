@@ -99,7 +99,7 @@ class NoticeEvent(Event):
 
 
 class FriendEvent(NoticeEvent):
-    user: User
+    user: User  # type: ignore
 
     @override
     def get_user_id(self) -> str:
@@ -116,7 +116,7 @@ class FriendRequestEvent(FriendEvent):
 
 
 class GuildEvent(NoticeEvent):
-    guild: Guild
+    guild: Guild  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -144,7 +144,7 @@ class GuildUpdatedEvent(GuildEvent):
 
 
 class GuildMemberEvent(GuildEvent):
-    user: User
+    user: User  # type: ignore
 
     @override
     def get_user_id(self) -> str:
@@ -169,18 +169,18 @@ class GuildMemberRemovedEvent(GuildMemberEvent):
 class GuildMemberRequestEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_REQUEST
 
-    member: Member
+    member: Member  # type: ignore
 
 
 @register_event_class
 class GuildMemberUpdatedEvent(GuildMemberEvent):
     __type__ = EventType.GUILD_MEMBER_UPDATED
 
-    member: Member
+    member: Member  # type: ignore
 
 
 class GuildRoleEvent(GuildEvent):
-    role: Role
+    role: Role  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -203,7 +203,7 @@ class GuildRoleUpdatedEvent(GuildRoleEvent):
 
 
 class LoginEvent(NoticeEvent):
-    login: Login
+    login: Login  # type: ignore
 
 
 @register_event_class
@@ -222,9 +222,9 @@ class LoginUpdatedEvent(LoginEvent):
 
 
 class MessageEvent(Event):
-    channel: Channel
-    user: User
-    message: SatoriMessage
+    channel: Channel  # type: ignore
+    user: User  # type: ignore
+    message: SatoriMessage  # type: ignore
     to_me: bool = False
     reply: Optional[RenderMessage] = None
 
@@ -306,7 +306,7 @@ class PrivateMessageEvent(MessageEvent):
 
 
 class PublicMessageEvent(MessageEvent):
-    member: Member
+    member: Member  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -380,9 +380,9 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
 
 
 class ReactionEvent(NoticeEvent):
-    channel: Channel
-    user: User
-    message: SatoriMessage
+    channel: Channel  # type: ignore
+    user: User  # type: ignore
+    message: SatoriMessage  # type: ignore
 
     if TYPE_CHECKING:
         _message: Message
@@ -445,7 +445,7 @@ class InteractionEvent(NoticeEvent):
 class InteractionButtonEvent(InteractionEvent):
     __type__ = EventType.INTERACTION_BUTTON
 
-    button: ButtonInteraction
+    button: ButtonInteraction  # type: ignore
 
     @override
     def get_event_description(self) -> str:
@@ -460,7 +460,7 @@ class InteractionButtonEvent(InteractionEvent):
 
 
 class PrivateInteractionButtonEvent(InteractionButtonEvent):
-    user: User
+    user: User  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -472,8 +472,8 @@ class PrivateInteractionButtonEvent(InteractionButtonEvent):
 
 
 class PublicInteractionButtonEvent(InteractionButtonEvent):
-    user: User
-    channel: Channel
+    user: User  # type: ignore
+    channel: Channel  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -510,7 +510,7 @@ class InteractionCommandEvent(InteractionEvent):
 
 
 class InteractionCommandArgvEvent(InteractionCommandEvent):
-    argv: ArgvInteraction
+    argv: ArgvInteraction  # type: ignore
 
     @override
     def get_event_description(self) -> str:
@@ -534,7 +534,7 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
 
 
 class PrivateInteractionCommandArgvEvent(InteractionCommandArgvEvent):
-    user: User
+    user: User  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -546,8 +546,8 @@ class PrivateInteractionCommandArgvEvent(InteractionCommandArgvEvent):
 
 
 class PublicInteractionCommandArgvEvent(InteractionCommandArgvEvent):
-    user: User
-    channel: Channel
+    user: User  # type: ignore
+    channel: Channel  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -562,7 +562,7 @@ class PublicInteractionCommandArgvEvent(InteractionCommandArgvEvent):
 
 
 class InteractionCommandMessageEvent(InteractionCommandEvent):
-    message: SatoriMessage
+    message: SatoriMessage  # type: ignore
     to_me: bool = False
     reply: Optional[RenderMessage] = None
 
@@ -585,7 +585,7 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
 
 
 class PrivateInteractionCommandMessageEvent(InteractionCommandMessageEvent):
-    user: User
+    user: User  # type: ignore
 
     @override
     def get_session_id(self) -> str:
@@ -597,8 +597,8 @@ class PrivateInteractionCommandMessageEvent(InteractionCommandMessageEvent):
 
 
 class PublicInteractionCommandMessageEvent(InteractionCommandMessageEvent):
-    user: User
-    channel: Channel
+    user: User  # type: ignore
+    channel: Channel  # type: ignore
 
     @override
     def get_session_id(self) -> str:

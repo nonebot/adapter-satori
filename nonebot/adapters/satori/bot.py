@@ -205,7 +205,7 @@ class Bot(BaseBot):
 
     def _handle_response(self, response: Response, noreturn=False) -> Any:
         if 200 <= response.status_code < 300:
-            if not noreturn:
+            if noreturn:
                 return
             return json.loads(response.content) if response.content else {}
         elif response.status_code == 400:
