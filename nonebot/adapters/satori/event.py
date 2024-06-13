@@ -1,7 +1,7 @@
 from enum import Enum
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, Dict, Type, TypeVar, Optional
+from typing import TYPE_CHECKING, TypeVar, Optional
 
 from nonebot.utils import escape_tag
 from nonebot.compat import model_dump, type_validate_python
@@ -84,10 +84,10 @@ class Event(BaseEvent, SatoriEvent):
         return False
 
 
-EVENT_CLASSES: Dict[str, Type[Event]] = {}
+EVENT_CLASSES: dict[str, type[Event]] = {}
 
 
-def register_event_class(event_class: Type[E]) -> Type[E]:
+def register_event_class(event_class: type[E]) -> type[E]:
     EVENT_CLASSES[event_class.__type__.value] = event_class
     return event_class
 
@@ -325,7 +325,7 @@ class PrivateMessageCreatedEvent(MessageCreatedEvent, PrivateMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id}): {self.get_message()!r}"
+            f"{self.user.name or self.user.nick or ''}({self.channel.id}): {self.get_message()!r}"
         )
 
 
@@ -334,7 +334,7 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
+            f"{(self.member.nick if self.member else None) or (self.user.name or self.user.nick or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}]"
             f": {self.get_message()!r}"
         )
@@ -343,7 +343,9 @@ class PublicMessageCreatedEvent(MessageCreatedEvent, PublicMessageEvent):
 class PrivateMessageDeletedEvent(MessageDeletedEvent, PrivateMessageEvent):
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Message {self.msg_id} from " f"{self.user.name or ''}({self.channel.id}) deleted")
+        return escape_tag(
+            f"Message {self.msg_id} from " f"{self.user.name or self.user.nick or ''}({self.channel.id}) deleted"
+        )
 
 
 class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
@@ -351,7 +353,7 @@ class PublicMessageDeletedEvent(MessageDeletedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
+            f"{(self.member.nick if self.member else None) or (self.user.name or self.user.nick or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}] deleted"
         )
 
@@ -361,7 +363,7 @@ class PrivateMessageUpdatedEvent(MessageUpdatedEvent, PrivateMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.user.name or ''}({self.channel.id}) updated"
+            f"{self.user.name or self.user.nick or ''}({self.channel.id}) updated"
             f": {self.get_message()!r}"
         )
 
@@ -371,7 +373,7 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
     def get_event_description(self) -> str:
         return escape_tag(
             f"Message {self.msg_id} from "
-            f"{self.member.name if self.member else (self.user.name or '')}({self.user.id})"
+            f"{(self.member.nick if self.member else None) or (self.user.name or self.user.nick or '')}({self.user.id})"
             f"@[{self.channel.name or ''}:{self.channel.id}] updated"
             f": {self.get_message()!r}"
         )

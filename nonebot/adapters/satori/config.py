@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from yarl import URL
 from pydantic import Field, BaseModel
@@ -28,5 +28,5 @@ class ClientInfo(BaseModel):
 
 
 class Config(BaseModel):
-    satori_clients: List[ClientInfo] = Field(default_factory=list)
+    satori_clients: list[ClientInfo] = Field(default_factory=list)
     """client 配置"""

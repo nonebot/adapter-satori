@@ -6,6 +6,7 @@ from nonebot.compat import type_validate_python
 
 import nonebot
 from nonebot.adapters.satori import Bot, Adapter
+from nonebot.adapters.satori.models import Login, LoginStatus
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
 
 
@@ -16,14 +17,13 @@ async def test_adapter(app: App):
 
     @cmd.handle()
     async def handle(bot: Bot):
-        await bot.send_message(
-            channel_id="67890",
-            message="hello",
-        )
+        await bot.send_message(channel="67890", message="hello")
 
     async with app.test_matcher(cmd) as ctx:
         adapter: Adapter = nonebot.get_adapter(Adapter)
-        bot: Bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="0", platform="test", info=None)
+        bot: Bot = ctx.create_bot(
+            base=Bot, adapter=adapter, self_id="0", login=Login(status=LoginStatus.CONNECT), info=None
+        )
 
         ctx.receive_event(
             bot,

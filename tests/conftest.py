@@ -1,6 +1,6 @@
 import threading
 from pathlib import Path
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 from nonebot.drivers import URL
@@ -11,9 +11,7 @@ from werkzeug.serving import BaseWSGIServer, make_server
 import nonebot
 import nonebot.adapters
 
-nonebot.adapters.__path__.append(  # type: ignore
-    str((Path(__file__).parent.parent / "nonebot" / "adapters").resolve())
-)
+nonebot.adapters.__path__.append(str((Path(__file__).parent.parent / "nonebot" / "adapters").resolve()))  # type: ignore
 
 from nonebot.adapters.satori import Adapter as SatoriAdapter
 

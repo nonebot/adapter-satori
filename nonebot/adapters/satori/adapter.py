@@ -1,7 +1,7 @@
 import json
 import asyncio
 from typing_extensions import override
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal, Optional
 
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed
@@ -40,15 +40,15 @@ from .models import (
 
 
 class Adapter(BaseAdapter):
-    bots: Dict[str, Bot]
+    bots: dict[str, Bot]
 
     @override
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
         # 读取适配器所需的配置项
         self.satori_config: Config = get_plugin_config(Config)
-        self.tasks: List[asyncio.Task] = []  # 存储 ws 任务
-        self.sequences: Dict[str, int] = {}  # 存储 连接序列号
+        self.tasks: list[asyncio.Task] = []  # 存储 ws 任务
+        self.sequences: dict[str, int] = {}  # 存储 连接序列号
         self.setup()
 
     @classmethod
@@ -136,7 +136,7 @@ class Adapter(BaseAdapter):
             if login.status != LoginStatus.ONLINE:
                 continue
             if login.self_id not in self.bots:
-                bot = Bot(self, login.self_id, login.platform or "satori", info)
+                bot = Bot(self, login.self_id, login, info)
                 self.bot_connect(bot)
                 log(
                     "INFO",
@@ -144,8 +144,7 @@ class Adapter(BaseAdapter):
                 )
             else:
                 bot = self.bots[login.self_id]
-            if login.user:
-                bot.on_ready(login.user)
+                bot._update(login)
         if not self.bots:
             log("WARNING", "No bots connected!")
             return
@@ -232,9 +231,7 @@ class Adapter(BaseAdapter):
                     )
                 else:
                     if isinstance(event, LoginAddedEvent):
-                        bot = Bot(self, event.self_id, event.platform, info)
-                        if event.user:
-                            bot.on_ready(event.user)
+                        bot = Bot(self, event.self_id, event.login, info)
                         self.bot_connect(bot)
                         log(
                             "INFO",
@@ -247,8 +244,8 @@ class Adapter(BaseAdapter):
                             f"<y>Bot {escape_tag(event.self_id)}</y> disconnected",
                         )
                         continue
-                    elif isinstance(event, LoginUpdatedEvent) and event.user:
-                        self.bots[event.self_id].on_ready(event.user)
+                    elif isinstance(event, LoginUpdatedEvent):
+                        self.bots[event.self_id]._update(event.login)
                     if not (bot := self.bots.get(event.self_id)):
                         log(
                             "WARNING",

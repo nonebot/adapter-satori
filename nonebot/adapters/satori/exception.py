@@ -19,9 +19,7 @@ class ActionFailed(BaseActionFailed, SatoriAdapterException):
         self.content = response.content
 
     def __repr__(self) -> str:
-        return (
-            f"<{self.__class__.__name__}: {self.status_code}, headers={self.headers}, content={self.content}>"
-        )
+        return f"<{self.__class__.__name__}: {self.status_code}, headers={self.headers}, content={self.content}>"
 
     def __str__(self):
         return self.__repr__()

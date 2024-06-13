@@ -2,9 +2,10 @@ import re
 from io import BytesIO
 from pathlib import Path
 from base64 import b64encode
+from collections.abc import Iterable
 from dataclasses import InitVar, field, dataclass
+from typing import Any, Union, Optional, TypedDict
 from typing_extensions import Self, NotRequired, override
-from typing import Any, Dict, List, Type, Tuple, Union, Iterable, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -47,7 +48,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @classmethod
     @override
-    def get_message_class(cls) -> Type["Message"]:
+    def get_message_class(cls) -> type["Message"]:
         return Message
 
     @staticmethod
@@ -371,7 +372,7 @@ class Raw(MessageSegment):
 
 class TextData(TypedDict):
     text: str
-    styles: Dict[Tuple[int, int], List[str]]
+    styles: dict[tuple[int, int], list[str]]
 
 
 @dataclass
@@ -728,7 +729,7 @@ STYLE_TYPE_MAP = {
 }
 
 
-def handle(element: Element, upper_styles: Optional[List[str]] = None):
+def handle(element: Element, upper_styles: Optional[list[str]] = None):
     tag = element.tag()
     if tag in ELEMENT_TYPE_MAP:
         seg_cls, seg_type = ELEMENT_TYPE_MAP[tag]
@@ -771,15 +772,13 @@ def handle(element: Element, upper_styles: Optional[List[str]] = None):
             *(handle(child, [*(upper_styles or [])]) for child in element.children),
         )
     else:
-        yield Custom(tag, element.attrs.copy())(
-            *(handle(child, [*(upper_styles or [])]) for child in element.children)
-        )
+        yield Custom(tag, element.attrs.copy())(*(handle(child, [*(upper_styles or [])]) for child in element.children))
 
 
 class Message(BaseMessage[MessageSegment]):
     @classmethod
     @override
-    def get_segment_class(cls) -> Type[MessageSegment]:
+    def get_segment_class(cls) -> type[MessageSegment]:
         return MessageSegment
 
     def __init__(
@@ -808,7 +807,7 @@ class Message(BaseMessage[MessageSegment]):
         yield MessageSegment.text(msg)
 
     @classmethod
-    def from_satori_element(cls, elements: List[Element]) -> "Message":
+    def from_satori_element(cls, elements: list[Element]) -> "Message":
         msg = Message()
 
         for elem in elements:

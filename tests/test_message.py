@@ -14,12 +14,11 @@ def test_message():
     assert Message.from_satori_element(parse(code))[0].data["chronocat:seq"] == "1"
     assert Message("<b test:aaa>1234</b>")[0].data["test:aaa"] is True
     assert (
-        Message.from_satori_element(parse("<img src='url' test:bbb='foo' width='123'/>"))[0].data["test:bbb"]
-        == "foo"
+        Message.from_satori_element(parse("<img src='url' test:bbb='foo' width='123'/>"))[0].data["test:bbb"] == "foo"
     )
-    assert Message.from_satori_element(
-        parse("<chronocat:face id='265' name='[辣眼睛]' platform='chronocat'/>")
-    )[0].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat"}
+    assert Message.from_satori_element(parse("<chronocat:face id='265' name='[辣眼睛]' platform='chronocat'/>"))[
+        0
+    ].data == {"id": "265", "name": "[辣眼睛]", "platform": "chronocat"}
 
     test_message1 = MessageSegment(type="chronocat:face", data={"id": 12}) + "\n" + "Hello Yoshi"
     assert str(test_message1) == '<chronocat:face id="12"/>\nHello Yoshi'
@@ -59,8 +58,6 @@ def test_message_fallback():
 </video>
 """
     msg = Message.from_satori_element(parse(code))
-    assert (
-        str(msg[0].children) == '当前平台不支持发送视频，请在<a href="http://aa.com/a.mp4">这里</a>观看视频！'
-    )
+    assert str(msg[0].children) == '当前平台不支持发送视频，请在<a href="http://aa.com/a.mp4">这里</a>观看视频！'
     assert msg.extract_plain_text() == "当前平台不支持发送视频，请在这里观看视频！"
     assert list(msg.query("link"))[0].data["text"] == "http://aa.com/a.mp4"

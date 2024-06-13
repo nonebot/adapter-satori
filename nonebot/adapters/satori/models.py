@@ -1,6 +1,10 @@
+import mimetypes
+from os import PathLike
 from enum import IntEnum
+from pathlib import Path
 from datetime import datetime
-from typing import Any, Dict, List, Union, Generic, Literal, TypeVar, Optional
+from typing_extensions import TypeAlias
+from typing import IO, Any, Union, Generic, Literal, TypeVar, Optional
 
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -63,7 +67,6 @@ class User(BaseModel):
 
 class Member(BaseModel):
     user: Optional[User] = None
-    name: Optional[str] = None
     nick: Optional[str] = None
     avatar: Optional[str] = None
     joined_at: Optional[datetime] = None
@@ -115,6 +118,8 @@ class Login(BaseModel):
     self_id: Optional[str] = None
     platform: Optional[str] = None
     status: LoginStatus
+    features: list[str] = Field(default_factory=list)
+    proxy_urls: list[str] = Field(default_factory=list)
 
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
@@ -145,7 +150,7 @@ class Opcode(IntEnum):
 
 class Payload(BaseModel):
     op: Opcode = Field(...)
-    body: Optional[Dict[str, Any]] = Field(None)
+    body: Optional[dict[str, Any]] = Field(None)
 
 
 class Identify(BaseModel):
@@ -154,7 +159,7 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: List[Login]
+    logins: list[Login]
 
 
 class IdentifyPayload(Payload):
@@ -282,19 +287,50 @@ T = TypeVar("T")
 
 if PYDANTIC_V2:
 
-    class PageResult(BaseModel, Generic[T]):  # type: ignore
-        data: List[T]
+    class PageResult(BaseModel, Generic[T]):
+        data: list[T]
         next: Optional[str] = None
 
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    class PageDequeResult(PageResult[T]):
+        prev: Optional[str] = None
 
 else:
 
     from pydantic.generics import GenericModel
 
     class PageResult(GenericModel, Generic[T]):
-        data: List[T]
+        data: list[T]
         next: Optional[str] = None
 
         class Config:
             extra = "allow"
+
+    class PageDequeResult(PageResult[T]):
+        prev: Optional[str] = None
+
+
+Direction: TypeAlias = Literal["before", "after", "around"]
+Order: TypeAlias = Literal["asc", "desc"]
+
+
+class Upload:
+    def __init__(
+        self, file: Union[bytes, IO[bytes], PathLike], mimetype: str = "image/png", name: Optional[str] = None
+    ):
+        self.file = file
+        self.mimetype = mimetype
+
+        if isinstance(self.file, PathLike):
+            self.mimetype = mimetypes.guess_type(str(self.file))[0] or self.mimetype
+            self.name = Path(self.file).name
+        else:
+            self.name = name
+
+    def dump(self):
+        file = self.file
+
+        if isinstance(file, PathLike):
+            file = open(file, "rb")
+        return self.name, file, self.mimetype
