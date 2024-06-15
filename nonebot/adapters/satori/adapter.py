@@ -1,5 +1,6 @@
 import json
 import asyncio
+from collections import defaultdict
 from typing_extensions import override
 from typing import Any, Literal, Optional
 
@@ -49,6 +50,7 @@ class Adapter(BaseAdapter):
         self.satori_config: Config = get_plugin_config(Config)
         self.tasks: list[asyncio.Task] = []  # 存储 ws 任务
         self.sequences: dict[str, int] = {}  # 存储 连接序列号
+        self._bots: defaultdict[str, set[str]] = defaultdict(set)  # 存储 identity 和 bot_id 的映射
         self.setup()
 
     @classmethod
@@ -89,6 +91,9 @@ class Adapter(BaseAdapter):
             *(asyncio.wait_for(task, timeout=10) for task in self.tasks),
             return_exceptions=True,
         )
+        self.tasks.clear()
+        self.sequences.clear()
+        self._bots.clear()
 
     @staticmethod
     def payload_to_json(payload: Payload) -> str:
@@ -137,12 +142,14 @@ class Adapter(BaseAdapter):
                 continue
             if login.self_id not in self.bots:
                 bot = Bot(self, login.self_id, login, info)
+                self._bots[info.identity].add(bot.self_id)
                 self.bot_connect(bot)
                 log(
                     "INFO",
                     f"<y>Bot {escape_tag(bot.self_id)}</y> connected",
                 )
             else:
+                self._bots[info.identity].add(login.self_id)
                 bot = self.bots[login.self_id]
                 bot._update(login)
         if not self.bots:
@@ -196,10 +203,11 @@ class Adapter(BaseAdapter):
                         if heartbeat_task:
                             heartbeat_task.cancel()
                             heartbeat_task = None
-                        bots = list(self.bots.values())
+                        bots = [self.bots[bot_id] for bot_id in self._bots[info.identity]]
                         for bot in bots:
                             self.bot_disconnect(bot)
                         bots.clear()
+                        self._bots[info.identity].clear()
             except Exception as e:
                 log(
                     "ERROR",
@@ -232,6 +240,7 @@ class Adapter(BaseAdapter):
                 else:
                     if isinstance(event, LoginAddedEvent):
                         bot = Bot(self, event.self_id, event.login, info)
+                        self._bots[info.identity].add(bot.self_id)
                         self.bot_connect(bot)
                         log(
                             "INFO",
@@ -239,6 +248,7 @@ class Adapter(BaseAdapter):
                         )
                     elif isinstance(event, LoginRemovedEvent):
                         self.bot_disconnect(self.bots[event.self_id])
+                        self._bots[info.identity].discard(event.self_id)
                         log(
                             "INFO",
                             f"<y>Bot {escape_tag(event.self_id)}</y> disconnected",
@@ -246,6 +256,7 @@ class Adapter(BaseAdapter):
                         continue
                     elif isinstance(event, LoginUpdatedEvent):
                         self.bots[event.self_id]._update(event.login)
+                        self._bots[info.identity].add(event.self_id)
                     if not (bot := self.bots.get(event.self_id)):
                         log(
                             "WARNING",
