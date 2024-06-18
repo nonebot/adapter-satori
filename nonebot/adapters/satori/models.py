@@ -307,7 +307,7 @@ else:
         class Config:
             extra = "allow"
 
-    class PageDequeResult(PageResult[T]):
+    class PageDequeResult(PageResult[T], Generic[T]):
         prev: Optional[str] = None
 
 

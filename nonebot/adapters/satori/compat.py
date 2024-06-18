@@ -34,9 +34,9 @@ else:
         check_fields: Optional[bool] = None,
     ):
         if mode == "before":
-            return validator(__field, *fields, pre=True, check_fields=check_fields, allow_reuse=True)
+            return validator(__field, *fields, pre=True, check_fields=check_fields or True, allow_reuse=True)
         else:
-            return validator(__field, *fields, check_fields=check_fields, allow_reuse=True)
+            return validator(__field, *fields, check_fields=check_fields or True, allow_reuse=True)
 
     @overload
     def model_validator(*, mode: Literal["before"]): ...
