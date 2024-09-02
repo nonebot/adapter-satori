@@ -160,7 +160,7 @@ class Adapter(BaseAdapter):
     async def _heartbeat(self, info: ClientInfo, ws: WebSocket):
         """心跳"""
         while True:
-            log("TRACE", f"Heartbeat {self.sequences[info.identity]}")
+            log("TRACE", f"Heartbeat {self.sequences.get(info.identity, 0)}")
             payload = PingPayload(op=Opcode.PING, body={})
             try:
                 await ws.send(self.payload_to_json(payload))
