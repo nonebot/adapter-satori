@@ -165,6 +165,11 @@ class Bot(BaseBot):
         return self.self_id
 
     @property
+    def support_features(self):
+        """Bot 所连接平台的支持的功能列表"""
+        return self._self_info.features
+
+    @property
     def ready(self) -> bool:
         """Bot 是否已连接"""
         return self._self_info is not None
