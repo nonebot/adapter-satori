@@ -273,6 +273,10 @@ class MessageCreatedEvent(MessageEvent):
 class MessageDeletedEvent(MessageEvent):
     __type__ = EventType.MESSAGE_DELETED
 
+    @override
+    def get_type(self) -> str:
+        return "notice"
+
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
             return type_validate_python(PrivateMessageDeletedEvent, model_dump(self))
@@ -283,6 +287,10 @@ class MessageDeletedEvent(MessageEvent):
 @register_event_class
 class MessageUpdatedEvent(MessageEvent):
     __type__ = EventType.MESSAGE_UPDATED
+
+    @override
+    def get_type(self) -> str:
+        return "notice"
 
     def convert(self):
         if self.channel.type == ChannelType.DIRECT:
