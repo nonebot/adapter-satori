@@ -265,7 +265,7 @@ class Adapter(BaseAdapter):
                         continue
                     if isinstance(event, (MessageEvent, InteractionEvent)):
                         event = event.convert()
-                    asyncio.create_task(bot.handle_event(event))
+                    _t = asyncio.create_task(bot.handle_event(event))
             elif isinstance(payload, PongPayload):
                 log("TRACE", "Pong")
                 continue

@@ -3,6 +3,7 @@ import json
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union, Literal, Optional, overload
 
+from yarl import URL
 from nonebot.message import handle_event
 from nonebot.drivers import Request, Response
 from nonebot.compat import model_dump, type_validate_python
@@ -238,9 +239,23 @@ class Bot(BaseBot):
 
         return self._handle_response(response)
 
+    def ensure_url(self, url: str) -> URL:
+        """确定链接形式。
+
+        若链接符合以下条件之一，则返回链接的代理形式 ({host}/{path}/{version}/proxy/{url})：
+            - 链接以 "upload://" 开头
+            - 链接开头出现在 self_info.proxy_urls 中的某一项
+        """
+        if url.startswith("upload"):
+            return self.info.api_base / "proxy" / url.lstrip("/")
+        for proxy_url in self._self_info.proxy_urls:
+            if url.startswith(proxy_url):
+                return self.info.api_base / "proxy" / url.lstrip("/")
+        return URL(url)
+
     async def download(self, url: str) -> bytes:
         """访问内部链接。"""
-        request = Request("GET", self.info.api_base / "proxy" / url.lstrip("/"))
+        request = Request("GET", self.ensure_url(url))
         try:
             response = await self.adapter.request(request)
         except Exception as e:
