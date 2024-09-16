@@ -121,6 +121,10 @@ class Login(BaseModel):
     features: list[str] = Field(default_factory=list)
     proxy_urls: list[str] = Field(default_factory=list)
 
+    @property
+    def id(self) -> Optional[str]:
+        return self.self_id or (self.user.id if self.user else None)
+
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
@@ -128,6 +132,29 @@ class Login(BaseModel):
 
         class Config:
             extra = "allow"
+
+
+class LoginPreview(BaseModel):
+    user: User
+    platform: str
+    status: Optional[LoginStatus] = None
+    features: list[str] = Field(default_factory=list)
+    proxy_urls: list[str] = Field(default_factory=list)
+
+    @property
+    def id(self) -> str:
+        return self.user.id
+
+    if PYDANTIC_V2:
+        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
+
+LoginType = Union[Login, LoginPreview]
 
 
 class ArgvInteraction(BaseModel):
@@ -159,7 +186,7 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: list[Login]
+    logins: list[LoginType]
 
 
 class IdentifyPayload(Payload):
@@ -243,7 +270,7 @@ class Event(BaseModel):
     button: Optional[ButtonInteraction] = None
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
-    login: Optional[Login] = None
+    login: Optional[LoginType] = None
     member: Optional[Member] = None
     message: Optional[MessageObject] = None
     operator: Optional[User] = None
@@ -262,6 +289,25 @@ class Event(BaseModel):
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
 
+    @model_validator(mode="before")
+    def ensure_login(cls, values):
+        if "self_id" not in values and "platform" not in values:
+            log(
+                "WARNING",
+                "received event without `self_id` and `platform`, "
+                "this may be caused by Satori Server used protocol version 1.2.",
+            )
+            if "login" in values:
+                values["self_id"] = values["login"]["user"]["id"]
+                values["platform"] = values["login"]["platform"]
+                return values
+            log(
+                "WARNING",
+                "received event without login, " "this may be caused by a bug of Satori Server.",
+            )
+            return values
+        return values
+
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
@@ -273,7 +319,7 @@ class Event(BaseModel):
 
 class EventPayload(Payload):
     op: Literal[Opcode.EVENT] = Field(Opcode.EVENT)
-    body: Event
+    body: dict
 
 
 PayloadType = Union[

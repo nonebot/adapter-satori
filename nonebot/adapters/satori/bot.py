@@ -17,7 +17,7 @@ from .models import PageDequeResult
 from .event import Event, MessageEvent
 from .models import MessageObject as SatoriMessage
 from .message import Author, Message, RenderMessage, MessageSegment
-from .models import Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
+from .models import Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, LoginType, PageResult
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -147,7 +147,7 @@ class Bot(BaseBot):
     adapter: "Adapter"
 
     @override
-    def __init__(self, adapter: "Adapter", self_id: str, login: Login, info: ClientInfo):
+    def __init__(self, adapter: "Adapter", self_id: str, login: LoginType, info: ClientInfo):
         super().__init__(adapter, self_id)
 
         # Bot 配置信息
@@ -182,7 +182,7 @@ class Bot(BaseBot):
             raise RuntimeError(f"Bot {self.self_id} of {self.platform} is not connected!")
         return self._self_info.user
 
-    def _update(self, login: Login) -> None:
+    def _update(self, login: LoginType) -> None:
         self._self_info = login
 
     def get_authorization_header(self) -> dict[str, str]:
@@ -191,6 +191,8 @@ class Bot(BaseBot):
             "Authorization": f"Bearer {self.info.token}",
             "X-Self-ID": self.self_id,
             "X-Platform": self.platform,
+            "Satori-Platform": self.platform,
+            "Satori-Login-ID": self.self_id,
         }
         if not self.info.token:
             del header["Authorization"]

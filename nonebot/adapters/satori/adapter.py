@@ -104,7 +104,7 @@ class Adapter(BaseAdapter):
     async def receive_payload(self, info: ClientInfo, ws: WebSocket) -> Payload:
         payload = type_validate_python(PayloadType, json.loads(await ws.receive()))
         if isinstance(payload, EventPayload):
-            self.sequences[info.identity] = payload.body.id
+            self.sequences[info.identity] = payload.body["id"]
         return payload
 
     async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Optional[Literal[True]]:
@@ -136,12 +136,12 @@ class Adapter(BaseAdapter):
             )
             return
         for login in resp.body.logins:
-            if not login.self_id:
+            if not login.id:
                 continue
             if login.status != LoginStatus.ONLINE:
                 continue
-            if login.self_id not in self.bots:
-                bot = Bot(self, login.self_id, login, info)
+            if login.id not in self.bots:
+                bot = Bot(self, login.id, login, info)
                 self._bots[info.identity].add(bot.self_id)
                 self.bot_connect(bot)
                 log(
@@ -149,8 +149,8 @@ class Adapter(BaseAdapter):
                     f"<y>Bot {escape_tag(bot.self_id)}</y> connected",
                 )
             else:
-                self._bots[info.identity].add(login.self_id)
-                bot = self.bots[login.self_id]
+                self._bots[info.identity].add(login.id)
+                bot = self.bots[login.id]
                 bot._update(login)
         if not self.bots:
             log("WARNING", "No bots connected!")
@@ -230,7 +230,7 @@ class Adapter(BaseAdapter):
             )
             if isinstance(payload, EventPayload):
                 try:
-                    event = self.payload_to_event(payload.body)
+                    event = self.payload_to_event(type_validate_python(Event, payload.body))
                 except Exception as e:
                     log(
                         "WARNING",

@@ -12,9 +12,6 @@ from nonebot.adapters.satori import Adapter
 async def test_ws(app: App):
     adapter: Adapter = nonebot.get_adapter(Adapter)
 
-    for client in adapter.satori_config.satori_clients:
-        adapter.tasks.append(asyncio.create_task(adapter.ws(client)))
-
     @ws_handlers.put
     def identify(json: dict) -> dict:
         assert json["op"] == 3
@@ -35,6 +32,14 @@ async def test_ws(app: App):
                 ]
             },
         }
+
+    @ws_handlers.put
+    def _ping(json: dict) -> dict:
+        assert json == {"op": 1}
+        return {"op": 2}
+
+    for client in adapter.satori_config.satori_clients:
+        adapter.tasks.append(asyncio.create_task(adapter.ws(client)))
 
     await asyncio.sleep(5)
     bots = nonebot.get_bots()
