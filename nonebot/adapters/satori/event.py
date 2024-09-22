@@ -246,8 +246,9 @@ class MessageEvent(Event):
 
     @model_validator(mode="before")
     def generate_message(cls, values):
-        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
-        values["original_message"] = deepcopy(values["_message"])
+        if isinstance(values, dict):
+            values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+            values["original_message"] = deepcopy(values["_message"])
         return values
 
     @property
@@ -405,7 +406,8 @@ class ReactionEvent(NoticeEvent):
 
     @model_validator(mode="before")
     def generate_message(cls, values):
-        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+        if isinstance(values, dict):
+            values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
         return values
 
     @property
@@ -526,11 +528,12 @@ class InteractionCommandArgvEvent(InteractionCommandEvent):
 
     @model_validator(mode="before")
     def generate_message(cls, values):
-        cmd = values["argv"]["name"]
-        if values["argv"].get("arguments", []):
-            cmd += " ".join(values["argv"]["arguments"])
-        values["_message"] = Message(cmd)
-        values["original_message"] = deepcopy(values["_message"])
+        if isinstance(values, dict):
+            cmd = values["argv"]["name"]
+            if values["argv"].get("arguments", []):
+                cmd += " ".join(values["argv"]["arguments"])
+            values["_message"] = Message(cmd)
+            values["original_message"] = deepcopy(values["_message"])
         return values
 
     def convert(self):
@@ -576,8 +579,9 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
 
     @model_validator(mode="before")
     def generate_message(cls, values):
-        values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
-        values["original_message"] = deepcopy(values["_message"])
+        if isinstance(values, dict):
+            values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+            values["original_message"] = deepcopy(values["_message"])
         return values
 
     @override
