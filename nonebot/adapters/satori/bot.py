@@ -184,7 +184,7 @@ class Bot(BaseBot):
     def self_info(self) -> User:
         """Bot 自身信息，仅当 Bot 连接鉴权完成后可用"""
         if self._self_info.user is None:
-            raise RuntimeError(f"Bot {self.self_id} of {self.platform} is not connected!")
+            raise RuntimeError(f"Bot {self._self_id} of {self.platform} is not connected!")
         return self._self_info.user
 
     def _update(self, login: LoginType) -> None:

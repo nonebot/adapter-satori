@@ -287,7 +287,7 @@ class Adapter(BaseAdapter):
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
-        log("DEBUG", f"Bot {bot.self_id} calling API <y>{api}</y>")
+        log("DEBUG", f"Bot {bot.identity} calling API <y>{api}</y>")
         api_handler: Optional[API] = getattr(bot.__class__, api, None)
         if api_handler is None:
             raise ApiNotAvailable(api)
