@@ -43,6 +43,6 @@ async def test_ws(app: App):
 
     await asyncio.sleep(5)
     bots = nonebot.get_bots()
-    assert "0" in bots
+    assert "test:0" in bots
     await adapter.shutdown()
-    assert "0" not in nonebot.get_bots()
+    assert "test:0" not in nonebot.get_bots()

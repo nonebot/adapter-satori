@@ -22,7 +22,7 @@ async def test_adapter(app: App):
     async with app.test_matcher(cmd) as ctx:
         adapter: Adapter = nonebot.get_adapter(Adapter)
         bot: Bot = ctx.create_bot(
-            base=Bot, adapter=adapter, self_id="0", login=Login(status=LoginStatus.CONNECT), info=None
+            base=Bot, adapter=adapter, self_id="0", login=Login(status=LoginStatus.CONNECT, platform="test"), info=None
         )
 
         ctx.receive_event(

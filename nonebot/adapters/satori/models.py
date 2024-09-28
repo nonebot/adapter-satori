@@ -125,6 +125,10 @@ class Login(BaseModel):
     def id(self) -> Optional[str]:
         return self.self_id or (self.user.id if self.user else None)
 
+    @property
+    def identity(self) -> str:
+        return f"{self.platform or 'satori'}:{self.id}"
+
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
 
@@ -144,6 +148,10 @@ class LoginPreview(BaseModel):
     @property
     def id(self) -> str:
         return self.user.id
+
+    @property
+    def identity(self) -> str:
+        return f"{self.platform}:{self.id}"
 
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore

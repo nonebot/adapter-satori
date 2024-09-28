@@ -148,8 +148,7 @@ class Bot(BaseBot):
 
     @override
     def __init__(self, adapter: "Adapter", self_id: str, login: LoginType, info: ClientInfo):
-        super().__init__(adapter, self_id)
-
+        self._self_id = self_id
         # Bot 配置信息
         self.info: ClientInfo = info
         # Bot 自身所属平台
@@ -157,13 +156,19 @@ class Bot(BaseBot):
         # Bot 自身信息
         self._self_info = login
 
+        super().__init__(adapter, self.identity)
+
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
+
+    @property
+    def identity(self):
+        return f"{self.platform}:{self.get_self_id()}"
 
     def get_self_id(self):
         if self._self_info and self._self_info.user:
             return self._self_info.user.id
-        return self.self_id
+        return self._self_id
 
     @property
     def support_features(self):
@@ -189,10 +194,10 @@ class Bot(BaseBot):
         """获取当前 Bot 的鉴权信息"""
         header = {
             "Authorization": f"Bearer {self.info.token}",
-            "X-Self-ID": self.self_id,
+            "X-Self-ID": self.get_self_id(),
             "X-Platform": self.platform,
             "Satori-Platform": self.platform,
-            "Satori-Login-ID": self.self_id,
+            "Satori-Login-ID": self.get_self_id(),
         }
         if not self.info.token:
             del header["Authorization"]

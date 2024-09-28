@@ -140,17 +140,17 @@ class Adapter(BaseAdapter):
                 continue
             if login.status != LoginStatus.ONLINE:
                 continue
-            if login.id not in self.bots:
+            if login.identity not in self.bots:
                 bot = Bot(self, login.id, login, info)
-                self._bots[info.identity].add(bot.self_id)
+                self._bots[info.identity].add(bot.identity)
                 self.bot_connect(bot)
                 log(
                     "INFO",
-                    f"<y>Bot {escape_tag(bot.self_id)}</y> connected",
+                    f"<y>Bot {escape_tag(bot.identity)}</y> connected",
                 )
             else:
-                self._bots[info.identity].add(login.id)
-                bot = self.bots[login.id]
+                self._bots[info.identity].add(login.identity)
+                bot = self.bots[login.identity]
                 bot._update(login)
         if not self.bots:
             log("WARNING", "No bots connected!")
@@ -235,32 +235,32 @@ class Adapter(BaseAdapter):
                     log(
                         "WARNING",
                         f"Failed to parse event {escape_tag(repr(payload))}",
-                        e,
+                        e if payload.body["type"] != "internal" else None,
                     )
                 else:
                     if isinstance(event, LoginAddedEvent):
                         bot = Bot(self, event.self_id, event.login, info)
-                        self._bots[info.identity].add(bot.self_id)
+                        self._bots[info.identity].add(bot.identity)
                         self.bot_connect(bot)
                         log(
                             "INFO",
-                            f"<y>Bot {escape_tag(bot.self_id)}</y> connected",
+                            f"<y>Bot {escape_tag(bot.identity)}</y> connected",
                         )
                     elif isinstance(event, LoginRemovedEvent):
-                        self.bot_disconnect(self.bots[event.self_id])
-                        self._bots[info.identity].discard(event.self_id)
+                        self.bot_disconnect(self.bots[f"{event.platform}:{event.self_id}"])
+                        self._bots[info.identity].discard(f"{event.platform}:{event.self_id}")
                         log(
                             "INFO",
-                            f"<y>Bot {escape_tag(event.self_id)}</y> disconnected",
+                            f"<y>Bot {escape_tag(f'{event.platform}:{event.self_id}')}</y> disconnected",
                         )
                         continue
                     elif isinstance(event, LoginUpdatedEvent):
-                        self.bots[event.self_id]._update(event.login)
-                        self._bots[info.identity].add(event.self_id)
-                    if not (bot := self.bots.get(event.self_id)):
+                        self.bots[f"{event.platform}:{event.self_id}"]._update(event.login)
+                        self._bots[info.identity].add(f"{event.platform}:{event.self_id}")
+                    if not (bot := self.bots.get(f"{event.platform}:{event.self_id}")):
                         log(
                             "WARNING",
-                            f"Received event for unknown bot " f"{escape_tag(event.self_id)}",
+                            f"Received event for unknown bot {escape_tag(f'{event.platform}:{event.self_id}')}",
                         )
                         continue
                     if isinstance(event, (MessageEvent, InteractionEvent)):
