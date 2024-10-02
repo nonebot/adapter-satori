@@ -14,7 +14,8 @@ _✨ NoneBot2 Satori Protocol适配器 / Satori Protocol Adapter for NoneBot2 �
 
 目前提供了 `satori` 协议实现的有：
 - [Chronocat](https://chronocat.vercel.app)
-- Koishi （搭配 `@koishijs/plugin-server`）
+- [nekobox](https://github.com/wyapx/nekobox)
+- Koishi （搭配 `@koishijs/plugin-server`, 其余内容请自行阅读 koishi 文档）
 
 ## 配置
 
@@ -102,6 +103,27 @@ overrides:
 ```
 
 配置文件详细内容请参考 [Chronocat/config](https://chronocat.vercel.app/guide/config/)。
+
+### 以对接 nekobox 为例
+
+你可以通过 `nekobox show` 命令来获取当前的配置信息。
+
+```shell
+$ nekobox show xxxxxx
+SignUrl:        xxxxxxxxxxxxx
+协议类型:       linux
+验证 token:     *************
+服务器绑定地址: 127.0.0.1
+服务器绑定端口: 7788
+服务器部署路径: neko
+默认日志等级:   INFO
+```
+
+此时
+- `host` 与 `服务器绑定地址` 一致
+- `port` 与 `服务器绑定端口` 一致
+- `path` 与 `服务器部署路径` 一致
+- `token` 与 `验证 token` 一致
 
 ## 示例
 
