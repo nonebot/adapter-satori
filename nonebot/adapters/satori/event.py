@@ -389,7 +389,7 @@ class PublicMessageUpdatedEvent(MessageUpdatedEvent, PublicMessageEvent):
 
 
 class ReactionEvent(NoticeEvent):
-    channel: Channel  # type: ignore
+    guild: Guild  # type: ignore
     user: User  # type: ignore
     message: SatoriMessage  # type: ignore
 
@@ -402,12 +402,18 @@ class ReactionEvent(NoticeEvent):
 
     @override
     def get_session_id(self) -> str:
-        return f"{self.channel.id}/{self.user.id}"
+        return f"{self.guild.id}_{self.user.id}"
 
     @model_validator(mode="before")
     def generate_message(cls, values):
         if isinstance(values, dict):
-            values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+            if "message" in values and values["message"] and "content" in values["message"]:
+                values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
+            else:
+                values["_message"] = Message()
+            if "message" not in values or not values["message"]:
+                message_id = values.get("_data", {}).get("message_id", "None")
+                values["message"] = SatoriMessage(id=str(message_id), content="")
         return values
 
     @property
@@ -421,7 +427,7 @@ class ReactionAddedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Reaction added to {self.msg_id} by {self.user.name}({self.channel.id})")
+        return escape_tag(f"Reaction added to msg {self.msg_id} by {self.user.name}({self.guild.id})")
 
 
 @register_event_class
@@ -430,7 +436,7 @@ class ReactionRemovedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Reaction removed from {self.msg_id}")
+        return escape_tag(f"Reaction removed from msg {self.msg_id}")
 
 
 @register_event_class

@@ -227,13 +227,15 @@ class MessageObject(BaseModel):
 
     @model_validator(mode="before")
     def ensure_content(cls, values):
-        if "content" in values:
-            return values
-        log(
-            "WARNING",
-            "received message without content, " "this may be caused by a bug of Satori Server.",
-        )
-        return {**values, "content": "Unknown"}
+        if isinstance(values, dict):
+            if "content" in values:
+                return values
+            log(
+                "WARNING",
+                "received message without content, " "this may be caused by a bug of Satori Server.",
+            )
+            return {**values, "content": "Unknown"}
+        return values
 
     @field_validator("created_at", mode="before")
     def parse_created_at(cls, v):
