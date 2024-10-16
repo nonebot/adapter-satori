@@ -48,7 +48,7 @@ class Adapter(BaseAdapter):
         super().__init__(driver, **kwargs)
         # 读取适配器所需的配置项
         self.satori_config: Config = get_plugin_config(Config)
-        self.tasks: list[asyncio.Task] = []  # 存储 ws 任务
+        self.tasks: set[asyncio.Task] = set()  # 存储 ws 任务等
         self.sequences: dict[str, int] = {}  # 存储 连接序列号
         self._bots: defaultdict[str, set[str]] = defaultdict(set)  # 存储 identity 和 bot_id 的映射
         self.setup()
@@ -80,7 +80,9 @@ class Adapter(BaseAdapter):
     async def startup(self) -> None:
         """定义启动时的操作，例如和平台建立连接"""
         for client in self.satori_config.satori_clients:
-            self.tasks.append(asyncio.create_task(self.ws(client)))
+            t = asyncio.create_task(self.ws(client))
+            self.tasks.add(t)
+            t.add_done_callback(self.tasks.discard)
 
     async def shutdown(self) -> None:
         for task in self.tasks:
@@ -184,6 +186,8 @@ class Adapter(BaseAdapter):
                             await asyncio.sleep(3)
                             continue
                         heartbeat_task = asyncio.create_task(self._heartbeat(info, ws))
+                        self.tasks.add(heartbeat_task)
+                        heartbeat_task.add_done_callback(self.tasks.discard)
                         await self._loop(info, ws)
                     except WebSocketClosed as e:
                         log(
@@ -266,6 +270,8 @@ class Adapter(BaseAdapter):
                     if isinstance(event, (MessageEvent, InteractionEvent)):
                         event = event.convert()
                     _t = asyncio.create_task(bot.handle_event(event))
+                    self.tasks.add(_t)
+                    _t.add_done_callback(self.tasks.discard)
             elif isinstance(payload, PongPayload):
                 log("TRACE", "Pong")
                 continue

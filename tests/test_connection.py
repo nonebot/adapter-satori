@@ -39,7 +39,9 @@ async def test_ws(app: App):
         return {"op": 2}
 
     for client in adapter.satori_config.satori_clients:
-        adapter.tasks.append(asyncio.create_task(adapter.ws(client)))
+        task = asyncio.create_task(adapter.ws(client))
+        adapter.tasks.add(task)
+        task.add_done_callback(adapter.tasks.discard)
 
     await asyncio.sleep(5)
     bots = nonebot.get_bots()
