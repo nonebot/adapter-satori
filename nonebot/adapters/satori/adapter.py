@@ -50,6 +50,7 @@ class Adapter(BaseAdapter):
         self.satori_config: Config = get_plugin_config(Config)
         self.tasks: set[asyncio.Task] = set()  # 存储 ws 任务等
         self.sequences: dict[str, int] = {}  # 存储 连接序列号
+        self.proxys: dict[str, list[str]] = {}  # 存储 proxy_url
         self._bots: defaultdict[str, set[str]] = defaultdict(set)  # 存储 identity 和 bot_id 的映射
         self.setup()
 
@@ -118,7 +119,7 @@ class Adapter(BaseAdapter):
             ),
         )
         if info.identity in self.sequences:
-            payload.body.sequence = self.sequences[info.identity]
+            payload.body.sn = self.sequences[info.identity]
 
         try:
             await ws.send(self.payload_to_json(payload))
@@ -138,25 +139,23 @@ class Adapter(BaseAdapter):
             )
             return
         for login in resp.body.logins:
-            if not login.id:
-                continue
-            if login.status != LoginStatus.ONLINE:
-                continue
-            if login.identity not in self.bots:
-                bot = Bot(self, login.id, login, info)
-                self._bots[info.identity].add(bot.identity)
+
+            if login.sn not in self.bots:
+                bot = Bot(self, login, info, resp.body.proxy_urls)
+                self._bots[info.identity].add(bot.self_id)
                 self.bot_connect(bot)
                 log(
                     "INFO",
                     f"<y>Bot {escape_tag(bot.identity)}</y> connected",
                 )
             else:
-                self._bots[info.identity].add(login.identity)
-                bot = self.bots[login.identity]
+                self._bots[info.identity].add(login.sn)
+                bot = self.bots[login.sn]
                 bot._update(login)
         if not self.bots:
             log("WARNING", "No bots connected!")
             return
+        self.proxys[info.identity] = resp.body.proxy_urls
         return True
 
     async def _heartbeat(self, info: ClientInfo, ws: WebSocket):
@@ -243,28 +242,28 @@ class Adapter(BaseAdapter):
                     )
                 else:
                     if isinstance(event, LoginAddedEvent):
-                        bot = Bot(self, event.self_id, event.login, info)
-                        self._bots[info.identity].add(bot.identity)
+                        bot = Bot(self, event.login, info, self.proxys[info.identity])
+                        self._bots[info.identity].add(bot.self_id)
                         self.bot_connect(bot)
                         log(
                             "INFO",
-                            f"<y>Bot {escape_tag(bot.identity)}</y> connected",
+                            f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> connected",
                         )
                     elif isinstance(event, LoginRemovedEvent):
-                        self.bot_disconnect(self.bots[f"{event.platform}:{event.self_id}"])
-                        self._bots[info.identity].discard(f"{event.platform}:{event.self_id}")
+                        self.bot_disconnect(self.bots[event.login.sn])
+                        self._bots[info.identity].discard(event.login.sn)
                         log(
                             "INFO",
-                            f"<y>Bot {escape_tag(f'{event.platform}:{event.self_id}')}</y> disconnected",
+                            f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> disconnected",
                         )
                         continue
                     elif isinstance(event, LoginUpdatedEvent):
-                        self.bots[f"{event.platform}:{event.self_id}"]._update(event.login)
-                        self._bots[info.identity].add(f"{event.platform}:{event.self_id}")
-                    if not (bot := self.bots.get(f"{event.platform}:{event.self_id}")):
+                        self.bots[event.login.sn]._update(event.login)
+                        self._bots[info.identity].add(event.login.sn)
+                    if not (bot := self.bots.get(event.login.sn)):
                         log(
                             "WARNING",
-                            f"Received event for unknown bot {escape_tag(f'{event.platform}:{event.self_id}')}",
+                            f"Received event for unknown bot {event.login.user.id if event.login.user else event.login.sn}",
                         )
                         continue
                     if isinstance(event, (MessageEvent, InteractionEvent)):

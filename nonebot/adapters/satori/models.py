@@ -107,62 +107,43 @@ class Role(BaseModel):
 
 class LoginStatus(IntEnum):
     OFFLINE = 0
+    """离线"""
     ONLINE = 1
+    """在线"""
     CONNECT = 2
+    """正在连接"""
     DISCONNECT = 3
+    """正在断开连接"""
     RECONNECT = 4
+    """正在重新连接"""
 
 
 class Login(BaseModel):
-    user: Optional[User] = None
-    self_id: Optional[str] = None
-    platform: Optional[str] = None
+    sn: str
     status: LoginStatus
+    adapter: str
+    platform: Optional[str] = None
+    user: Optional[User] = None
     features: list[str] = Field(default_factory=list)
-    proxy_urls: list[str] = Field(default_factory=list)
-
-    @property
-    def id(self) -> Optional[str]:
-        return self.self_id or (self.user.id if self.user else None)
-
-    @property
-    def identity(self) -> str:
-        return f"{self.platform or 'satori'}:{self.id}"
-
-    if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
-
-    else:
-
-        class Config:
-            extra = "allow"
-
-
-class LoginPreview(BaseModel):
-    user: User
-    platform: str
-    status: Optional[LoginStatus] = None
-    features: list[str] = Field(default_factory=list)
-    proxy_urls: list[str] = Field(default_factory=list)
 
     @property
     def id(self) -> str:
+        if not self.user:
+            raise ValueError(f"Login {self.sn} has not complete yet")
         return self.user.id
-
-    @property
-    def identity(self) -> str:
-        return f"{self.platform}:{self.id}"
 
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
-
     else:
 
         class Config:
             extra = "allow"
 
 
-LoginType = Union[Login, LoginPreview]
+class LoginOnline(Login):
+    status: Literal[LoginStatus.ONLINE] = LoginStatus.ONLINE
+    user: User  # type: ignore
+    platform: str  # type: ignore
 
 
 class ArgvInteraction(BaseModel):
@@ -177,10 +158,17 @@ class ButtonInteraction(BaseModel):
 
 class Opcode(IntEnum):
     EVENT = 0
+    """事件 (接收)"""
     PING = 1
+    """心跳 (发送)"""
     PONG = 2
+    """心跳回复 (接收)"""
     IDENTIFY = 3
+    """鉴权 (发送)"""
     READY = 4
+    """鉴权成功 (接收)"""
+    META = 5
+    """元信息更新 (接收)"""
 
 
 class Payload(BaseModel):
@@ -190,11 +178,21 @@ class Payload(BaseModel):
 
 class Identify(BaseModel):
     token: Optional[str] = None
-    sequence: Optional[int] = None
+    sn: Optional[int] = None
 
 
 class Ready(BaseModel):
-    logins: list[LoginType]
+    logins: list[Login]
+    proxy_urls: list[str] = Field(default_factory=list)
+
+
+class Meta(BaseModel):
+    logins: list[Login]
+    proxy_urls: list[str] = Field(default_factory=list)
+
+
+class MetaPartial(BaseModel):
+    proxy_urls: list[str] = Field(default_factory=list)
 
 
 class IdentifyPayload(Payload):
@@ -213,6 +211,11 @@ class PingPayload(Payload):
 
 class PongPayload(Payload):
     op: Literal[Opcode.PONG] = Field(Opcode.PONG)
+
+
+class MetaPayload(Payload):
+    op: Literal[Opcode.META] = Field(Opcode.META)
+    body: MetaPartial
 
 
 class MessageObject(BaseModel):
@@ -271,16 +274,13 @@ class MessageObject(BaseModel):
 
 
 class Event(BaseModel):
-    id: int
     type: str
-    platform: str
-    self_id: str
     timestamp: datetime
+    login: LoginOnline
     argv: Optional[ArgvInteraction] = None
     button: Optional[ButtonInteraction] = None
     channel: Optional[Channel] = None
     guild: Optional[Guild] = None
-    login: Optional[LoginType] = None
     member: Optional[Member] = None
     message: Optional[MessageObject] = None
     operator: Optional[User] = None
@@ -333,7 +333,7 @@ class EventPayload(Payload):
 
 
 PayloadType = Union[
-    Union[EventPayload, PingPayload, PongPayload, IdentifyPayload, ReadyPayload],
+    Union[EventPayload, PingPayload, PongPayload, IdentifyPayload, ReadyPayload, MetaPayload],
     Payload,
 ]
 

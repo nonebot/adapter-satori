@@ -13,11 +13,11 @@ from nonebot.adapters import Bot as BaseBot
 from .element import parse
 from .utils import API, log
 from .config import ClientInfo
-from .models import PageDequeResult
+from .models import PageDequeResult, Meta
 from .event import Event, MessageEvent
 from .models import MessageObject as SatoriMessage
 from .message import Author, Message, RenderMessage, MessageSegment
-from .models import Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, LoginType, PageResult
+from .models import Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -147,28 +147,24 @@ class Bot(BaseBot):
     adapter: "Adapter"
 
     @override
-    def __init__(self, adapter: "Adapter", self_id: str, login: LoginType, info: ClientInfo):
-        self._self_id = self_id
+    def __init__(self, adapter: "Adapter", login: Login, info: ClientInfo, proxy_urls: list[str]):
         # Bot 配置信息
         self.info: ClientInfo = info
         # Bot 自身所属平台
         self.platform: str = login.platform or "satori"
         # Bot 自身信息
-        self._self_info = login
+        self._self_info: Login = login
+        self.proxy_urls = proxy_urls
 
-        super().__init__(adapter, self.identity)
+        super().__init__(adapter, login.sn)
 
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
 
-    @property
-    def identity(self):
-        return f"{self.platform}:{self.get_self_id()}"
-
     def get_self_id(self):
-        if self._self_info and self._self_info.user:
+        if self._self_info.user:
             return self._self_info.user.id
-        return self._self_id
+        return self.self_id
 
     @property
     def support_features(self):
@@ -178,7 +174,7 @@ class Bot(BaseBot):
     @property
     def ready(self) -> bool:
         """Bot 是否已连接"""
-        return self._self_info is not None
+        return self._self_info.user is not None
 
     @property
     def self_info(self) -> User:
@@ -187,17 +183,17 @@ class Bot(BaseBot):
             raise RuntimeError(f"Bot {self._self_id} of {self.platform} is not connected!")
         return self._self_info.user
 
-    def _update(self, login: LoginType) -> None:
+    def _update(self, login: Login) -> None:
         self._self_info = login
 
     def get_authorization_header(self) -> dict[str, str]:
         """获取当前 Bot 的鉴权信息"""
         header = {
             "Authorization": f"Bearer {self.info.token}",
-            "X-Self-ID": self.get_self_id(),
+            "X-Self-ID": self.self_info.id,
             "X-Platform": self.platform,
             "Satori-Platform": self.platform,
-            "Satori-Login-ID": self.get_self_id(),
+            "Satori-User-ID": self.self_info.id,
         }
         if not self.info.token:
             del header["Authorization"]
@@ -255,7 +251,7 @@ class Bot(BaseBot):
         """
         if url.startswith("upload"):
             return self.info.api_base / "proxy" / url.lstrip("/")
-        for proxy_url in self._self_info.proxy_urls:
+        for proxy_url in self.proxy_urls:
             if url.startswith(proxy_url):
                 return self.info.api_base / "proxy" / url.lstrip("/")
         return URL(url)
@@ -270,6 +266,15 @@ class Bot(BaseBot):
 
         self._handle_response(response, noreturn=True)
         return response.content  # type: ignore
+
+    async def request_internal(self, url: str, method: str = "GET", **kwargs) -> dict:
+        """访问内部链接。"""
+        request = Request(method, self.ensure_url(url), **kwargs)
+        try:
+            response = await self.adapter.request(request)
+        except Exception as e:
+            raise NetworkError("API request failed") from e
+        return self._handle_response(response)
 
     @override
     async def send(
@@ -723,28 +728,42 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def internal(self, *, action: str, **kwargs) -> Any:
+    async def internal(self, *, action: str, method: str = "POST", **kwargs) -> Any:
         """内部接口调用。
 
         参数:
             action (str): 内部接口名称
+            method (str): HTTP 请求方法, 默认为 "POST"
             **kwargs: 参数
         """
         request = Request(
-            "POST",
+            method,
             self.info.api_base / "internal" / action,
             json=kwargs,
         )
         return await self._request(request)
 
-    @API
-    async def admin_login_list(self) -> list[Login]:
+    async def meta_get(self) -> Meta:
+        """获取元信息。返回一个 `Meta` 对象。
+
+        Returns:
+            Meta: `Meta` 对象
+        """
         request = Request(
             "POST",
-            self.info.api_base / "admin" / "login.list",
+            self.info.api_base / "meta",
         )
-        res = await self._request(request)
-        return [type_validate_python(Login, i) for i in res]
+        return type_validate_python(Meta, await self._request(request))
+
+    async def webhook_create(self, url: str, token: Optional[str] = None):
+        """创建 Webhook。"""
+        request = Request("POST", self.info.api_base / "meta/webhook.create", json={"url": url, "token": token})
+        return await self._request(request)
+
+    async def webhook_delete(self, url: str):
+        """删除 Webhook。"""
+        request = Request("POST", self.info.api_base / "meta/webhook.delete", json={"url": url})
+        return await self._request(request)
 
     @overload
     async def upload(self, *uploads: Upload) -> list[str]: ...
