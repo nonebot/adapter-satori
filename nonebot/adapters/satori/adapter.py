@@ -30,7 +30,6 @@ from .models import (
     Opcode,
     Payload,
     Identify,
-    LoginStatus,
     PayloadType,
     PingPayload,
     PongPayload,
@@ -263,7 +262,8 @@ class Adapter(BaseAdapter):
                     if not (bot := self.bots.get(event.login.sn)):
                         log(
                             "WARNING",
-                            f"Received event for unknown bot {event.login.user.id if event.login.user else event.login.sn}",
+                            f"Received event for unknown bot "
+                            f"{event.login.user.id if event.login.user else event.login.sn}",
                         )
                         continue
                     if isinstance(event, (MessageEvent, InteractionEvent)):
