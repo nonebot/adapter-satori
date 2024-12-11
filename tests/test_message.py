@@ -26,7 +26,7 @@ def test_message():
     assert (Message() + "123").extract_plain_text() == "123"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_message_rich_expr():
     raw = """\
 <message forward>

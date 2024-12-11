@@ -309,13 +309,15 @@ class Event(BaseModel):
                     "this may be caused by Satori Server used protocol under version 1.2.",
                 )
                 if "login" not in values:
-                    values["login"] = model_dump(LoginOnline(
-                        sn=values["self_id"],
-                        status=LoginStatus.ONLINE,
-                        adapter="satori",
-                        platform=values["platform"],
-                        user=User(id=values["self_id"]),
-                    ))
+                    values["login"] = model_dump(
+                        LoginOnline(
+                            sn=values["self_id"],
+                            status=LoginStatus.ONLINE,
+                            adapter="satori",
+                            platform=values["platform"],
+                            user=User(id=values["self_id"]),
+                        )
+                    )
             if "id" in values and "sn" not in values:
                 values["sn"] = values["id"]
         return values

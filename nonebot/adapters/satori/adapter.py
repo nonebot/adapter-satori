@@ -140,7 +140,7 @@ class Adapter(BaseAdapter):
         for login in resp.body.logins:
 
             if login.sn not in self.bots:
-                bot = Bot(self, login.sn,login, info, resp.body.proxy_urls)
+                bot = Bot(self, login.sn, login, info, resp.body.proxy_urls)
                 self._bots[info.identity].add(bot.self_id)
                 self.bot_connect(bot)
                 log(

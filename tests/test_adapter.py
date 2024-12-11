@@ -6,11 +6,11 @@ from nonebot.compat import type_validate_python
 
 import nonebot
 from nonebot.adapters.satori import Bot, Adapter
-from nonebot.adapters.satori.models import Login, LoginStatus, User
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
+from nonebot.adapters.satori.models import User, Login, LoginStatus
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_adapter(app: App):
 
     cmd = nonebot.on_command("test")
@@ -25,7 +25,9 @@ async def test_adapter(app: App):
             base=Bot,
             adapter=adapter,
             self_id="0",
-            login=Login(sn="0", adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")),
+            login=Login(
+                sn="0", adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")
+            ),
             info=None,
             proxy_urls=[],
         )
