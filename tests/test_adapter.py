@@ -6,7 +6,7 @@ from nonebot.compat import type_validate_python
 
 import nonebot
 from nonebot.adapters.satori import Bot, Adapter
-from nonebot.adapters.satori.models import Login, LoginStatus
+from nonebot.adapters.satori.models import Login, LoginStatus, User
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
 
 
@@ -22,7 +22,12 @@ async def test_adapter(app: App):
     async with app.test_matcher(cmd) as ctx:
         adapter: Adapter = nonebot.get_adapter(Adapter)
         bot: Bot = ctx.create_bot(
-            base=Bot, adapter=adapter, self_id="0", login=Login(status=LoginStatus.CONNECT, platform="test"), info=None
+            base=Bot,
+            adapter=adapter,
+            self_id="0",
+            login=Login(sn="0", adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")),
+            info=None,
+            proxy_urls=[],
         )
 
         ctx.receive_event(
@@ -30,11 +35,19 @@ async def test_adapter(app: App):
             type_validate_python(
                 PublicMessageCreatedEvent,
                 {
-                    "id": 1,
+                    "sn": 1,
                     "type": "message-created",
-                    "platform": "test",
-                    "self_id": "0",
                     "timestamp": 1000 * int(datetime.now().timestamp()),
+                    "login": {
+                        "sn": "0",
+                        "adapter": "test",
+                        "platform": "test",
+                        "status": 1,
+                        "user": {
+                            "id": "12345",
+                            "nick": "test",
+                        },
+                    },
                     "channel": {
                         "id": "67890",
                         "type": 0,

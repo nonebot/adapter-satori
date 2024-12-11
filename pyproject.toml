@@ -76,3 +76,7 @@ typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
 defineConstant = { PYDANTIC_V2 = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"

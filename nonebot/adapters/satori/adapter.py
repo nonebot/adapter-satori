@@ -140,12 +140,12 @@ class Adapter(BaseAdapter):
         for login in resp.body.logins:
 
             if login.sn not in self.bots:
-                bot = Bot(self, login, info, resp.body.proxy_urls)
+                bot = Bot(self, login.sn,login, info, resp.body.proxy_urls)
                 self._bots[info.identity].add(bot.self_id)
                 self.bot_connect(bot)
                 log(
                     "INFO",
-                    f"<y>Bot {escape_tag(bot.identity)}</y> connected",
+                    f"<y>Bot {login.user.id if login.user else login.sn}</y> connected",
                 )
             else:
                 self._bots[info.identity].add(login.sn)
@@ -241,7 +241,7 @@ class Adapter(BaseAdapter):
                     )
                 else:
                     if isinstance(event, LoginAddedEvent):
-                        bot = Bot(self, event.login, info, self.proxys[info.identity])
+                        bot = Bot(self, event.login.sn, event.login, info, self.proxys[info.identity])
                         self._bots[info.identity].add(bot.self_id)
                         self.bot_connect(bot)
                         log(

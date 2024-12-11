@@ -7,7 +7,7 @@ from typing_extensions import TypeAlias
 from typing import IO, Any, Union, Generic, Literal, TypeVar, Optional
 
 from pydantic import Field, BaseModel
-from nonebot.compat import PYDANTIC_V2, ConfigDict
+from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 
 from .utils import log
 from .compat import field_validator, model_validator
@@ -301,21 +301,23 @@ class Event(BaseModel):
 
     @model_validator(mode="before")
     def ensure_login(cls, values):
-        if "self_id" not in values and "platform" not in values:
-            log(
-                "WARNING",
-                "received event without `self_id` and `platform`, "
-                "this may be caused by Satori Server used protocol version 1.2.",
-            )
-            if "login" in values:
-                values["self_id"] = values["login"]["user"]["id"]
-                values["platform"] = values["login"]["platform"]
-                return values
-            log(
-                "WARNING",
-                "received event without login, " "this may be caused by a bug of Satori Server.",
-            )
-            return values
+        if isinstance(values, dict):
+            if "self_id" in values and "platform" in values:
+                log(
+                    "WARNING",
+                    "received event with `self_id` and `platform`, "
+                    "this may be caused by Satori Server used protocol under version 1.2.",
+                )
+                if "login" not in values:
+                    values["login"] = model_dump(LoginOnline(
+                        sn=values["self_id"],
+                        status=LoginStatus.ONLINE,
+                        adapter="satori",
+                        platform=values["platform"],
+                        user=User(id=values["self_id"]),
+                    ))
+            if "id" in values and "sn" not in values:
+                values["sn"] = values["id"]
         return values
 
     if PYDANTIC_V2:
