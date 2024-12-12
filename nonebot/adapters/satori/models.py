@@ -139,6 +139,19 @@ class Login(BaseModel):
         class Config:
             extra = "allow"
 
+    @model_validator(mode="before")
+    def ensure_user(cls, values):
+        if isinstance(values, dict):
+            if "self_id" in values and "user" not in values:
+                values["user"] = {"id": values["self_id"]}
+            if "sn" not in values:
+                values["sn"] = values["user"]["id"]
+            if "adapter" not in values:
+                values["adapter"] = "satori"
+            if "status" not in values:
+                values["status"] = LoginStatus.ONLINE
+        return values
+
 
 class LoginOnline(Login):
     status: Literal[LoginStatus.ONLINE] = LoginStatus.ONLINE

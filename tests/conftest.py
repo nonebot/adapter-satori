@@ -26,7 +26,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~httpx+~websockets",
         "log_level": "DEBUG",
-        "satori_clients": [{"host": "localhost", "port": "5500", "path": "", "token": "test_token"}],
+        # "satori_clients": [{"host": "localhost", "port": "5500", "path": "", "token": "test_token"}],
     }
 
 
