@@ -17,15 +17,7 @@ from .utils import API, log
 from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
 from .models import Event as SatoriEvent
-from .event import (
-    EVENT_CLASSES,
-    Event,
-    MessageEvent,
-    LoginAddedEvent,
-    InteractionEvent,
-    LoginRemovedEvent,
-    LoginUpdatedEvent,
-)
+from .event import EVENT_CLASSES, Event, MessageEvent, LoginAddedEvent, InteractionEvent, LoginRemovedEvent
 from .models import (
     Opcode,
     Payload,
@@ -240,15 +232,23 @@ class Adapter(BaseAdapter):
                         e if payload.body["type"] != "internal" else None,
                     )
                 else:
-                    if isinstance(event, LoginAddedEvent):
-                        bot = Bot(self, event.login.sn, event.login, info, self.proxys[info.identity])
-                        self._bots[info.identity].add(bot.self_id)
-                        self.bot_connect(bot)
-                        log(
-                            "INFO",
-                            f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> connected",
-                        )
-                    elif isinstance(event, LoginRemovedEvent):
+                    if not (bot := self.bots.get(event.login.sn)):
+                        if isinstance(event, LoginAddedEvent):
+                            bot = Bot(self, event.login.sn, event.login, info, self.proxys[info.identity])
+                            self._bots[info.identity].add(bot.self_id)
+                            self.bot_connect(bot)
+                            log(
+                                "INFO",
+                                f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> connected",
+                            )
+                        else:
+                            log(
+                                "WARNING",
+                                f"Received event for unknown bot "
+                                f"{event.login.user.id if event.login.user else event.login.sn}",
+                            )
+                            continue
+                    if isinstance(event, LoginRemovedEvent):
                         self.bot_disconnect(self.bots[event.login.sn])
                         self._bots[info.identity].discard(event.login.sn)
                         log(
@@ -256,16 +256,10 @@ class Adapter(BaseAdapter):
                             f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> disconnected",
                         )
                         continue
-                    elif isinstance(event, LoginUpdatedEvent):
+                    else:
                         self.bots[event.login.sn]._update(event.login)
                         self._bots[info.identity].add(event.login.sn)
-                    if not (bot := self.bots.get(event.login.sn)):
-                        log(
-                            "WARNING",
-                            f"Received event for unknown bot "
-                            f"{event.login.user.id if event.login.user else event.login.sn}",
-                        )
-                        continue
+
                     if isinstance(event, (MessageEvent, InteractionEvent)):
                         event = event.convert()
                     _t = asyncio.create_task(bot.handle_event(event))
