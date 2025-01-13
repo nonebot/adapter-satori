@@ -119,7 +119,7 @@ class LoginStatus(IntEnum):
 
 
 class Login(BaseModel):
-    sn: str
+    sn: int
     status: LoginStatus
     adapter: str
     platform: Optional[str] = None
@@ -127,10 +127,10 @@ class Login(BaseModel):
     features: list[str] = Field(default_factory=list)
 
     @property
-    def id(self) -> str:
+    def identity(self):
         if not self.user:
-            raise ValueError(f"Login {self.sn} has not complete yet")
-        return self.user.id
+            raise ValueError(f"Login {self} has not complete yet")
+        return f"{self.platform or 'satori'}:{self.user.id}"
 
     if PYDANTIC_V2:
         model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
@@ -145,7 +145,7 @@ class Login(BaseModel):
             if "self_id" in values and "user" not in values:
                 values["user"] = {"id": values["self_id"]}
             if "sn" not in values:
-                values["sn"] = values["user"]["id"]
+                values["sn"] = 0
             if "adapter" not in values:
                 values["adapter"] = "satori"
             if "status" not in values:
@@ -195,12 +195,12 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: list[Login]
+    logins: list[LoginOnline]
     proxy_urls: list[str] = Field(default_factory=list)
 
 
 class Meta(BaseModel):
-    logins: list[Login]
+    logins: list[LoginOnline]
     proxy_urls: list[str] = Field(default_factory=list)
 
 

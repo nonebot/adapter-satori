@@ -17,11 +17,21 @@ from .utils import API, log
 from .config import Config, ClientInfo
 from .exception import ApiNotAvailable
 from .models import Event as SatoriEvent
-from .event import EVENT_CLASSES, Event, MessageEvent, LoginAddedEvent, InteractionEvent, LoginRemovedEvent
+from .event import (
+    EVENT_CLASSES,
+    Event,
+    MessageEvent,
+    LoginAddedEvent,
+    InteractionEvent,
+    LoginRemovedEvent,
+    LoginUpdatedEvent,
+)
 from .models import (
     Opcode,
     Payload,
     Identify,
+    LoginStatus,
+    MetaPayload,
     PayloadType,
     PingPayload,
     PongPayload,
@@ -130,22 +140,19 @@ class Adapter(BaseAdapter):
             )
             return
         for login in resp.body.logins:
-
-            if login.sn not in self.bots:
-                bot = Bot(self, login.sn, login, info, resp.body.proxy_urls)
-                self._bots[info.identity].add(bot.self_id)
+            if not login.user:
+                continue
+            if login.identity not in self.bots:
+                bot = Bot(self, login.user.id, login, info, resp.body.proxy_urls)
+                self._bots[info.identity].add(bot.identity)
                 self.bot_connect(bot)
-                log(
-                    "INFO",
-                    f"<y>Bot {login.user.id if login.user else login.sn}</y> connected",
-                )
+                log("INFO", f"<y>Bot {bot.identity}</y> connected")
             else:
-                self._bots[info.identity].add(login.sn)
-                bot = self.bots[login.sn]
+                bot = self.bots[login.identity]
+                self._bots[info.identity].add(bot.identity)
                 bot._update(login)
         if not self.bots:
             log("WARNING", "No bots connected!")
-            return
         self.proxys[info.identity] = resp.body.proxy_urls
         return True
 
@@ -232,33 +239,55 @@ class Adapter(BaseAdapter):
                         e if payload.body["type"] != "internal" else None,
                     )
                 else:
-                    if not (bot := self.bots.get(event.login.sn)):
-                        if isinstance(event, LoginAddedEvent):
-                            bot = Bot(self, event.login.sn, event.login, info, self.proxys[info.identity])
-                            self._bots[info.identity].add(bot.self_id)
-                            self.bot_connect(bot)
-                            log(
-                                "INFO",
-                                f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> connected",
-                            )
+                    if isinstance(event, LoginAddedEvent):
+                        login = event.login
+                        if not login.user:
+                            log("WARNING", f"Received login-added event without user: {login}")
+                            continue
+                        bot = Bot(self, login.user.id, login, info, self.proxys[info.identity])
+                        self._bots[info.identity].add(bot.self_id)
+                        self.bot_connect(bot)
+                        log("INFO", f"<y>Bot {bot.self_id}</y> connected")
+                    elif isinstance(event, LoginRemovedEvent):
+                        login = event.login
+                        if not login.user:
+                            log("WARNING", f"Received login-removed event without user: {login}")
+                            continue
+                        bot = self.bots.get(login.identity)
+                        if bot:
+                            self.bot_disconnect(bot)
+                            self._bots[info.identity].discard(bot.self_id)
+                            log("INFO", f"<y>Bot {bot.self_id}</y> disconnected")
                         else:
                             log(
                                 "WARNING",
-                                f"Received event for unknown bot "
-                                f"{event.login.user.id if event.login.user else event.login.sn}",
+                                f"Received login-removed event for unknown bot {login}",
                             )
                             continue
-                    if isinstance(event, LoginRemovedEvent):
-                        self.bot_disconnect(self.bots[event.login.sn])
-                        self._bots[info.identity].discard(event.login.sn)
-                        log(
-                            "INFO",
-                            f"<y>Bot {event.login.user.id if event.login.user else event.login.sn}</y> disconnected",
-                        )
-                        continue
+                    elif isinstance(event, LoginUpdatedEvent):
+                        login = event.login
+                        if not login.user:
+                            log("WARNING", f"Received login-updated event without user: {login}")
+                            continue
+                        bot = self.bots.get(login.identity)
+                        if bot:
+                            bot._update(login)
+                        else:
+                            if login.status != LoginStatus.ONLINE:
+                                log(
+                                    "WARNING",
+                                    f"Received login-updated event for unknown bot {login}",
+                                )
+                                continue
+                            bot = Bot(self, login.user.id, login, info, self.proxys[info.identity])
+                            self._bots[info.identity].add(bot.self_id)
+                            self.bot_connect(bot)
+                            log("INFO", f"<y>Bot {bot.self_id}</y> connected")
                     else:
-                        self.bots[event.login.sn]._update(event.login)
-                        self._bots[info.identity].add(event.login.sn)
+                        bot = self.bots.get(event.login.identity)
+                        if not bot:
+                            log("WARNING", f"Received event for unknown bot {event.login}")
+                            continue
 
                     if isinstance(event, (MessageEvent, InteractionEvent)):
                         event = event.convert()
@@ -268,6 +297,12 @@ class Adapter(BaseAdapter):
             elif isinstance(payload, PongPayload):
                 log("TRACE", "Pong")
                 continue
+            elif isinstance(payload, MetaPayload):
+                log("TRACE", f"Meta: {payload.body}")
+                self.proxys[info.identity] = payload.body.proxy_urls
+                for bot_id in self._bots[info.identity]:
+                    bot = self.bots[bot_id]
+                    bot.proxy_urls = payload.body.proxy_urls
             else:
                 log(
                     "WARNING",
@@ -286,7 +321,7 @@ class Adapter(BaseAdapter):
 
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
-        log("DEBUG", f"Bot {bot.platform}:{bot.self_info.id} calling API <y>{api}</y>")
+        log("DEBUG", f"Bot {bot.identity} calling API <y>{api}</y>")
         api_handler: Optional[API] = getattr(bot.__class__, api, None)
         if api_handler is None:
             raise ApiNotAvailable(api)

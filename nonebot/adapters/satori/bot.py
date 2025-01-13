@@ -148,6 +148,7 @@ class Bot(BaseBot):
 
     @override
     def __init__(self, adapter: "Adapter", self_id: str, login: Login, info: ClientInfo, proxy_urls: list[str]):
+        self._self_id: str = self_id
         # Bot 配置信息
         self.info: ClientInfo = info
         # Bot 自身所属平台
@@ -156,15 +157,19 @@ class Bot(BaseBot):
         self._self_info: Login = login
         self.proxy_urls = proxy_urls
 
-        super().__init__(adapter, self_id)
+        super().__init__(adapter, self.identity)
 
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
 
+    @property
+    def identity(self):
+        return f"{self.platform}:{self.get_self_id()}"
+
     def get_self_id(self):
         if self._self_info.user:
             return self._self_info.user.id
-        return self.self_id
+        return self._self_id
 
     @property
     def support_features(self):

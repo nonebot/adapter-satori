@@ -1,5 +1,3 @@
-import pytest
-
 from nonebot.adapters.satori.element import parse
 from nonebot.adapters.satori.message import Message, MessageSegment
 
@@ -26,8 +24,7 @@ def test_message():
     assert (Message() + "123").extract_plain_text() == "123"
 
 
-@pytest.mark.asyncio()
-async def test_message_rich_expr():
+def test_message_rich_expr():
     raw = """\
 <message forward>
 <message>Hello!</message>

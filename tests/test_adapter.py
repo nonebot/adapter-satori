@@ -24,9 +24,9 @@ async def test_adapter(app: App):
         bot: Bot = ctx.create_bot(
             base=Bot,
             adapter=adapter,
-            self_id="0",
+            self_id="12345",
             login=Login(
-                sn="0", adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")
+                sn=0, adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")
             ),
             info=None,
             proxy_urls=[],
@@ -41,7 +41,7 @@ async def test_adapter(app: App):
                     "type": "message-created",
                     "timestamp": 1000 * int(datetime.now().timestamp()),
                     "login": {
-                        "sn": "0",
+                        "sn": 0,
                         "adapter": "test",
                         "platform": "test",
                         "status": 1,
