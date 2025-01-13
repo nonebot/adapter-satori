@@ -9,7 +9,6 @@ from typing import IO, Any, Union, Generic, Literal, TypeVar, Optional
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 
-from .utils import log
 from .compat import field_validator, model_validator
 
 
@@ -195,12 +194,12 @@ class Identify(BaseModel):
 
 
 class Ready(BaseModel):
-    logins: list[LoginOnline]
+    logins: list[Login]
     proxy_urls: list[str] = Field(default_factory=list)
 
 
 class Meta(BaseModel):
-    logins: list[LoginOnline]
+    logins: list[Login]
     proxy_urls: list[str] = Field(default_factory=list)
 
 
@@ -241,18 +240,6 @@ class MessageObject(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    @model_validator(mode="before")
-    def ensure_content(cls, values):
-        if isinstance(values, dict):
-            if "content" in values:
-                return values
-            log(
-                "WARNING",
-                "received message without content, " "this may be caused by a bug of Satori Server.",
-            )
-            return {**values, "content": "Unknown"}
-        return values
-
     @field_validator("created_at", mode="before")
     def parse_created_at(cls, v):
         if v is None:
@@ -286,6 +273,10 @@ class MessageObject(BaseModel):
             extra = "allow"
 
 
+class MessageReceipt(MessageObject):
+    content: Optional[str] = None  # type: ignore
+
+
 class Event(BaseModel):
     type: str
     timestamp: datetime
@@ -316,11 +307,11 @@ class Event(BaseModel):
     def ensure_login(cls, values):
         if isinstance(values, dict):
             if "self_id" in values and "platform" in values:
-                log(
-                    "WARNING",
-                    "received event with `self_id` and `platform`, "
-                    "this may be caused by Satori Server used protocol under version 1.2.",
-                )
+                # log(
+                #     "WARNING",
+                #     "received event with `self_id` and `platform`, "
+                #     "this may be caused by Satori Server used protocol under version 1.2.",
+                # )
                 if "login" not in values:
                     values["login"] = model_dump(
                         LoginOnline(

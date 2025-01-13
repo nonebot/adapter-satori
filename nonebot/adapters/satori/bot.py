@@ -13,9 +13,9 @@ from nonebot.adapters import Bot as BaseBot
 from .element import parse
 from .utils import API, log
 from .config import ClientInfo
-from .models import PageDequeResult
 from .event import Event, MessageEvent
 from .models import MessageObject as SatoriMessage
+from .models import MessageReceipt, PageDequeResult
 from .message import Author, Message, RenderMessage, MessageSegment
 from .models import Meta, Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
 from .exception import (
@@ -287,7 +287,7 @@ class Bot(BaseBot):
         event: Event,
         message: Union[str, Message, MessageSegment],
         **kwargs,
-    ) -> list[SatoriMessage]:
+    ) -> list[MessageReceipt]:
         if not event.channel:
             raise RuntimeError("Event cannot be replied to!")
         return await self.send_message(event.channel.id, message)
@@ -296,7 +296,7 @@ class Bot(BaseBot):
         self,
         channel: Union[str, Channel],
         message: Union[str, Message, MessageSegment],
-    ) -> list[SatoriMessage]:
+    ) -> list[MessageReceipt]:
         """发送消息
 
         参数:
@@ -310,7 +310,7 @@ class Bot(BaseBot):
         self,
         user: Union[str, User],
         message: Union[str, Message, MessageSegment],
-    ) -> list[SatoriMessage]:
+    ) -> list[MessageReceipt]:
         """发送私聊消息
 
         参数:
@@ -343,14 +343,14 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         content: str,
-    ) -> list[SatoriMessage]:
+    ) -> list[MessageReceipt]:
         request = Request(
             "POST",
             self.info.api_base / "message.create",
             json={"channel_id": channel_id, "content": content},
         )
         res = await self._request(request)
-        return [type_validate_python(SatoriMessage, i) for i in res]
+        return [type_validate_python(MessageReceipt, i) for i in res]
 
     @API
     async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:

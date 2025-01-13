@@ -106,7 +106,8 @@ class Adapter(BaseAdapter):
         return payload.json(by_alias=True)
 
     async def receive_payload(self, info: ClientInfo, ws: WebSocket) -> Payload:
-        payload = type_validate_python(PayloadType, json.loads(await ws.receive()))
+        data = json.loads(await ws.receive())
+        payload = type_validate_python(PayloadType, data)
         if isinstance(payload, EventPayload):
             self.sequences[info.identity] = payload.body["id"]
         return payload
