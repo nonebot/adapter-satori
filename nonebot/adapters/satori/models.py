@@ -315,7 +315,7 @@ class Event(BaseModel):
                 if "login" not in values:
                     values["login"] = model_dump(
                         LoginOnline(
-                            sn=values["self_id"],
+                            sn=0,
                             status=LoginStatus.ONLINE,
                             adapter="satori",
                             platform=values["platform"],
