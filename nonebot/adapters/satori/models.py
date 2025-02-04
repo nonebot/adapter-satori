@@ -4,11 +4,12 @@ from enum import IntEnum
 from pathlib import Path
 from datetime import datetime
 from typing_extensions import TypeAlias
-from typing import IO, Any, Union, Generic, Literal, TypeVar, Optional
+from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar, Optional
 
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 
+from .utils import log
 from .compat import field_validator, model_validator
 
 
@@ -26,7 +27,7 @@ class Channel(BaseModel):
     parent_id: Optional[str] = None
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -40,7 +41,7 @@ class Guild(BaseModel):
     avatar: Optional[str] = None
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -56,7 +57,7 @@ class User(BaseModel):
     is_bot: Optional[bool] = None
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -83,7 +84,7 @@ class Member(BaseModel):
         return datetime.fromtimestamp(timestamp / 1000)
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -96,7 +97,7 @@ class Role(BaseModel):
     name: Optional[str] = None
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -132,7 +133,7 @@ class Login(BaseModel):
         return f"{self.platform or 'satori'}:{self.user.id}"
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
     else:
 
         class Config:
@@ -265,7 +266,7 @@ class MessageObject(BaseModel):
         return datetime.fromtimestamp(timestamp / 1000)
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -307,12 +308,12 @@ class Event(BaseModel):
     def ensure_login(cls, values):
         if isinstance(values, dict):
             if "self_id" in values and "platform" in values:
-                # log(
-                #     "WARNING",
-                #     "received event with `self_id` and `platform`, "
-                #     "this may be caused by Satori Server used protocol under version 1.2.",
-                # )
                 if "login" not in values:
+                    log(
+                        "WARNING",
+                        "received event with `self_id` and `platform` but without `login`, "
+                        "this may be caused by Satori Server used protocol under version 1.2.",
+                    )
                     values["login"] = model_dump(
                         LoginOnline(
                             sn=0,
@@ -327,7 +328,7 @@ class Event(BaseModel):
         return values
 
     if PYDANTIC_V2:
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
 
@@ -355,7 +356,7 @@ if PYDANTIC_V2:
         data: list[T]
         next: Optional[str] = None
 
-        model_config: ConfigDict = ConfigDict(extra="allow")  # type: ignore
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     class PageDequeResult(PageResult[T]):
         prev: Optional[str] = None
