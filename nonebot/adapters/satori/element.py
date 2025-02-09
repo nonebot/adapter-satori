@@ -347,9 +347,9 @@ def parse(src: str, context: Optional[dict] = None):
     def parse_content(source: str, _start: bool, _end: bool):
         source = unescape(source)
         if _start:
-            source = re.sub(r"^\s*\n\s*", "", source, re.MULTILINE)
+            source = re.sub(r"^\s*\n\s*", "", source, flags=re.MULTILINE)
         if _end:
-            source = re.sub(r"\s*\n\s*$", "", source, re.MULTILINE)
+            source = re.sub(r"\s*\n\s*$", "", source, flags=re.MULTILINE)
         push_text(source)
 
     tag_pat = tag_pat2 if context is not None else tag_pat1
