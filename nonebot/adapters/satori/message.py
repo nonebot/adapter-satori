@@ -127,6 +127,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         raw: Optional[Union[bytes, BytesIO]] = None,
         mime: Optional[str] = None,
         name: Optional[str] = None,
+        duration: Optional[float] = None,
         poster: Optional[str] = None,
         extra: Optional[dict] = None,
         cache: Optional[bool] = None,
@@ -143,6 +144,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
             raise ValueError("audio need at least one of url, path and raw")
         if name:
             data["title"] = name
+        if duration:
+            data["duration"] = duration  # type: ignore
         if poster:
             data["poster"] = poster
         if cache is not None:
