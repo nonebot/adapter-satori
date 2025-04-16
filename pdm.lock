@@ -588,14 +588,14 @@ files = [
 
 [[package]]
 name = "nonebot2"
-version = "2.4.0"
+version = "2.4.2"
 requires_python = "<4.0,>=3.9"
 summary = "An asynchronous python bot framework."
 dependencies = [
     "anyio<5.0.0,>=4.4.0",
     "exceptiongroup<2.0.0,>=1.2.2",
     "loguru<1.0.0,>=0.6.0",
-    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
+    "pydantic!=2.10.0,!=2.10.1,!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
     "pygtrie<3.0.0,>=2.4.1",
     "python-dotenv<2.0.0,>=0.21.0",
     "tomli<3.0.0,>=2.0.1; python_version < \"3.11\"",
@@ -603,24 +603,24 @@ dependencies = [
     "yarl<2.0.0,>=1.7.2",
 ]
 files = [
-    {file = "nonebot2-2.4.0-py3-none-any.whl", hash = "sha256:7c712e05561afa4795c9135a5b27a43d076220f4538ffec518e68c344e3e51d4"},
-    {file = "nonebot2-2.4.0.tar.gz", hash = "sha256:4b10e33d389847500c9bde9ef3c5533b604a90ca1529750245f1aaf82b28f1e1"},
+    {file = "nonebot2-2.4.2-py3-none-any.whl", hash = "sha256:ed3e970cdb6c885fb23349b65a045c08cf3ac7f43e28564ae0c72d3671ecda74"},
+    {file = "nonebot2-2.4.2.tar.gz", hash = "sha256:cf72d5920503ff373ba1d7963f3ddf573db913eb504e3b68ee347efb937db27d"},
 ]
 
 [[package]]
 name = "nonebot2"
-version = "2.4.0"
+version = "2.4.2"
 extras = ["httpx", "websockets"]
 requires_python = "<4.0,>=3.9"
 summary = "An asynchronous python bot framework."
 dependencies = [
-    "httpx[http2]<1.0.0,>=0.20.0",
-    "nonebot2==2.4.0",
+    "httpx[http2]<1.0.0,>=0.26.0",
+    "nonebot2==2.4.2",
     "websockets>=10.0",
 ]
 files = [
-    {file = "nonebot2-2.4.0-py3-none-any.whl", hash = "sha256:7c712e05561afa4795c9135a5b27a43d076220f4538ffec518e68c344e3e51d4"},
-    {file = "nonebot2-2.4.0.tar.gz", hash = "sha256:4b10e33d389847500c9bde9ef3c5533b604a90ca1529750245f1aaf82b28f1e1"},
+    {file = "nonebot2-2.4.2-py3-none-any.whl", hash = "sha256:ed3e970cdb6c885fb23349b65a045c08cf3ac7f43e28564ae0c72d3671ecda74"},
+    {file = "nonebot2-2.4.2.tar.gz", hash = "sha256:cf72d5920503ff373ba1d7963f3ddf573db913eb504e3b68ee347efb937db27d"},
 ]
 
 [[package]]

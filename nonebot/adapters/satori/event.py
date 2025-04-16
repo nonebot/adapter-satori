@@ -4,13 +4,12 @@ from typing_extensions import override
 from typing import TYPE_CHECKING, TypeVar, Optional
 
 from nonebot.utils import escape_tag
-from nonebot.compat import model_dump, type_validate_python
+from nonebot.compat import model_dump, model_validator, type_validate_python
 
 from nonebot.adapters import Event as BaseEvent
 
 from .element import parse
 from .models import Role, User
-from .compat import model_validator
 from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import MessageObject as SatoriMessage

@@ -1,12 +1,12 @@
 [project]
 name = "nonebot-adapter-satori"
-version = "0.13.4"
+version = "0.13.5"
 description = "Satori Protocol Adapter for Nonebot2"
 authors = [
     {name = "RF-Tar-Railt",email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "nonebot2>=2.3.0",
+    "nonebot2>=2.4.2",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -27,7 +27,7 @@ dev = [
     "black>=24.1.1",
     "ruff>=0.2.1",
     "pre-commit>=3.5.0",
-    "nonebot2[httpx,websockets]>=2.3.0",
+    "nonebot2[httpx,websockets]>=2.4.2",
     "pydantic>=2.7.4",
 ]
 test = [

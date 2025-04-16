@@ -7,10 +7,9 @@ from typing_extensions import TypeAlias
 from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar, Optional
 
 from pydantic import Field, BaseModel
-from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
+from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, field_validator, model_validator
 
 from .utils import log
-from .compat import field_validator, model_validator
 
 
 class ChannelType(IntEnum):
@@ -22,7 +21,7 @@ class ChannelType(IntEnum):
 
 class Channel(BaseModel):
     id: str
-    type: ChannelType
+    type: ChannelType = Field(default=ChannelType.TEXT)
     name: Optional[str] = None
     parent_id: Optional[str] = None
 
