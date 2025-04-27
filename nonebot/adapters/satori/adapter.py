@@ -109,7 +109,10 @@ class Adapter(BaseAdapter):
         data = json.loads(await ws.receive())
         payload = type_validate_python(PayloadType, data)
         if isinstance(payload, EventPayload):
-            self.sequences[info.identity] = payload.body["id"]
+            if "id" in payload.body:
+                self.sequences[info.identity] = payload.body["id"]
+            else:
+                self.sequences[info.identity] = payload.body["sn"]
         return payload
 
     async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Optional[Literal[True]]:
