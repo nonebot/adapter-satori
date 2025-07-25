@@ -392,8 +392,12 @@ class ReactionEvent(NoticeEvent):
     user: User  # type: ignore
     message: SatoriMessage  # type: ignore
 
+    reply: Optional[RenderMessage] = None
+    to_me: bool = False
+
     if TYPE_CHECKING:
         _message: Message
+        oringinal_message: Message
 
     @override
     def get_user_id(self) -> str:
@@ -410,10 +414,19 @@ class ReactionEvent(NoticeEvent):
                 values["_message"] = Message.from_satori_element(parse(values["message"]["content"]))
             else:
                 values["_message"] = Message()
+            values["original_message"] = deepcopy(values["_message"])
             if "message" not in values or not values["message"]:
                 message_id = values.get("_data", {}).get("message_id", "None")
                 values["message"] = SatoriMessage(id=str(message_id), content="")
         return values
+
+    @override
+    def get_message(self) -> Message:
+        return self._message
+
+    @override
+    def is_tome(self) -> bool:
+        return self.to_me
 
     @property
     def msg_id(self) -> str:
@@ -599,6 +612,10 @@ class InteractionCommandMessageEvent(InteractionCommandEvent):
         if self.user:
             return type_validate_python(PrivateInteractionCommandMessageEvent, model_dump(self))
         return self
+
+    @override
+    def is_tome(self) -> bool:
+        return self.to_me
 
 
 class PrivateInteractionCommandMessageEvent(InteractionCommandMessageEvent):

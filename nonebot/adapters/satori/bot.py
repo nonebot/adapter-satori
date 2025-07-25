@@ -13,10 +13,10 @@ from nonebot.adapters import Bot as BaseBot
 from .element import parse
 from .utils import API, log
 from .config import ClientInfo
-from .event import Event, MessageEvent
 from .models import MessageObject as SatoriMessage
 from .models import MessageReceipt, PageDequeResult
 from .message import Author, Message, RenderMessage, MessageSegment
+from .event import Event, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 from .models import Meta, Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
 from .exception import (
     ActionFailed,
@@ -33,10 +33,10 @@ if TYPE_CHECKING:
     from .adapter import Adapter
 
 
-async def _check_reply(
-    bot: "Bot",
-    event: MessageEvent,
-) -> None:
+MESSAGE_EVENTS = Union[MessageEvent, ReactionEvent, InteractionCommandMessageEvent]
+
+
+async def _check_reply(bot: "Bot", event: MESSAGE_EVENTS) -> None:
     """检查消息中存在的回复，赋值 `event.reply`, `event.to_me`。
 
     参数:
@@ -79,10 +79,7 @@ async def _check_reply(
         message.append(MessageSegment.text(""))
 
 
-def _check_at_me(
-    bot: "Bot",
-    event: MessageEvent,
-):
+def _check_at_me(bot: "Bot", event: MESSAGE_EVENTS):
     def _is_at_me_seg(segment: MessageSegment) -> bool:
         return segment.type == "at" and segment.data.get("id") == str(bot.get_self_id())
 
@@ -118,7 +115,7 @@ def _check_at_me(
         message.append(MessageSegment.text(""))
 
 
-def _check_nickname(bot: "Bot", event: MessageEvent) -> None:
+def _check_nickname(bot: "Bot", event: MESSAGE_EVENTS) -> None:
     """检查消息开头是否存在昵称，去除并赋值 `event.to_me`。
 
     参数:
@@ -205,7 +202,7 @@ class Bot(BaseBot):
         return header
 
     async def handle_event(self, event: Event) -> None:
-        if isinstance(event, MessageEvent):
+        if isinstance(event, (MessageEvent, ReactionEvent, InteractionCommandMessageEvent)):
             await _check_reply(self, event)
             _check_at_me(self, event)
             _check_nickname(self, event)
