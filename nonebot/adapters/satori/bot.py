@@ -54,7 +54,7 @@ async def _check_reply(bot: "Bot", event: MESSAGE_EVENTS) -> None:
     if TYPE_CHECKING:
         assert isinstance(msg_seg, RenderMessage)
     event.reply = msg_seg  # type: ignore
-    if "content" in msg_seg.data and (author_msg := msg_seg.children.get("author")):
+    if author_msg := msg_seg.children.get("author"):
         author_seg = author_msg[0]
         if TYPE_CHECKING:
             assert isinstance(author_seg, Author)
