@@ -6,6 +6,7 @@ from nonebot.compat import type_validate_python
 
 import nonebot
 from nonebot.adapters.satori import Bot, Adapter
+from nonebot.adapters.satori.config import ClientInfo
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
 from nonebot.adapters.satori.models import User, Login, LoginStatus
 
@@ -28,7 +29,7 @@ async def test_adapter(app: App):
             login=Login(
                 sn=0, adapter="test", status=LoginStatus.ONLINE, platform="test", user=User(id="12345", name="test")
             ),
-            info=None,
+            info=ClientInfo(port=5140),
             proxy_urls=[],
         )
 

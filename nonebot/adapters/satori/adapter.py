@@ -43,6 +43,7 @@ from .models import (
 
 class Adapter(BaseAdapter):
     bots: dict[str, Bot]
+    driver: "HTTPClientMixin"
 
     @override
     def __init__(self, driver: Driver, **kwargs: Any):
@@ -76,6 +77,7 @@ class Adapter(BaseAdapter):
                 f"{self.get_name()} Adapter need a WebSocketClient Driver to work."
             )
         # 在 NoneBot 启动和关闭时进行相关操作
+        assert isinstance(self.driver, Driver)
         self.on_ready(self.startup)
         self.driver.on_shutdown(self.shutdown)
 
@@ -148,6 +150,7 @@ class Adapter(BaseAdapter):
                 continue
             if login.identity not in self.bots:
                 bot = Bot(self, login.user.id, login, info, resp.body.proxy_urls)
+                await bot.sess.setup()
                 self._bots[info.identity].add(bot.identity)
                 self.bot_connect(bot)
                 log("INFO", f"<y>Bot {bot.identity}</y> connected")
@@ -249,6 +252,7 @@ class Adapter(BaseAdapter):
                             log("WARNING", f"Received login-added event without user: {login}")
                             continue
                         bot = Bot(self, login.user.id, login, info, self.proxys[info.identity])
+                        await bot.sess.setup()
                         self._bots[info.identity].add(bot.self_id)
                         self.bot_connect(bot)
                         log("INFO", f"<y>Bot {bot.self_id}</y> connected")
@@ -284,6 +288,7 @@ class Adapter(BaseAdapter):
                                 )
                                 continue
                             bot = Bot(self, login.user.id, login, info, self.proxys[info.identity])
+                            await bot.sess.setup()
                             self._bots[info.identity].add(bot.self_id)
                             self.bot_connect(bot)
                             log("INFO", f"<y>Bot {bot.self_id}</y> connected")

@@ -1,5 +1,7 @@
 import re
 import json
+
+from nonebot.internal.driver import HTTPClientMixin
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union, Literal, Optional, overload
 
@@ -156,6 +158,8 @@ class Bot(BaseBot):
 
         super().__init__(adapter, self.identity)
 
+        self.sess = self.adapter.driver.get_session(headers=self.get_authorization_header())
+
     def __getattr__(self, item):
         raise AttributeError(f"'Bot' object has no attribute '{item}'")
 
@@ -238,7 +242,7 @@ class Bot(BaseBot):
         request.headers.update(self.get_authorization_header())
         request.json = {k: v for k, v in request.json.items() if v is not None} if request.json else None
         try:
-            response = await self.adapter.request(request)
+            response = await self.sess.request(request)
         except Exception as e:
             raise NetworkError("API request failed") from e
 
