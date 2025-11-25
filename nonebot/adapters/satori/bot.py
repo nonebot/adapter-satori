@@ -1,7 +1,5 @@
 import re
 import json
-
-from nonebot.internal.driver import HTTPClientMixin
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union, Literal, Optional, overload
 
