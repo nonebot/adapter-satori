@@ -5,7 +5,7 @@
 groups = ["default", ":test", "dev", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:8079209b1b46a915aa1e730505e4ddb35789625abff32444ff7e41314c09c2de"
+content_hash = "sha256:e1b2b9c9890cfc6a09ffe037c5b22f66996ae8ea498a96689bb7f0263340b4d2"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -62,16 +62,6 @@ dependencies = [
 ]
 files = [
     {file = "async-asgi-testclient-1.4.11.tar.gz", hash = "sha256:4449ac85d512d661998ec61f91c9ae01851639611d748d81ae7f816736551792"},
-]
-
-[[package]]
-name = "backports-asyncio-runner"
-version = "1.2.0"
-requires_python = "<3.11,>=3.8"
-summary = "Backport of asyncio.Runner, a context manager that controls event loop life cycle."
-files = [
-    {file = "backports_asyncio_runner-1.2.0-py3-none-any.whl", hash = "sha256:0da0a936a8aeb554eccb426dc55af3ba63bcdc69fa1a600b5bb305413a4477b5"},
-    {file = "backports_asyncio_runner-1.2.0.tar.gz", hash = "sha256:a5aa7b2b7d8f8bfcaa2b57313f70792df84e32a2a746f585213373f900b42162"},
 ]
 
 [[package]]
@@ -898,17 +888,16 @@ files = [
 
 [[package]]
 name = "pytest-asyncio"
-version = "1.2.0"
+version = "0.26.0"
 requires_python = ">=3.9"
 summary = "Pytest support for asyncio"
 dependencies = [
-    "backports-asyncio-runner<2,>=1.1; python_version < \"3.11\"",
     "pytest<9,>=8.2",
-    "typing-extensions>=4.12; python_version < \"3.13\"",
+    "typing-extensions>=4.12; python_version < \"3.10\"",
 ]
 files = [
-    {file = "pytest_asyncio-1.2.0-py3-none-any.whl", hash = "sha256:8e17ae5e46d8e7efe51ab6494dd2010f4ca8dae51652aa3c8d55acf50bfb2e99"},
-    {file = "pytest_asyncio-1.2.0.tar.gz", hash = "sha256:c609a64a2a8768462d0c99811ddb8bd2583c33fd33cf7f21af1c142e824ffb57"},
+    {file = "pytest_asyncio-0.26.0-py3-none-any.whl", hash = "sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0"},
+    {file = "pytest_asyncio-0.26.0.tar.gz", hash = "sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f"},
 ]
 
 [[package]]

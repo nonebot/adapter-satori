@@ -30,13 +30,6 @@ dev = [
     "nonebot2[httpx,websockets]>=2.4.2",
     "pydantic>=2.7.4",
 ]
-test = [
-    "nonebug>=0.3.5",
-    "pytest-asyncio>=0.23.5",
-    "pytest-xdist>=3.5.0",
-    "wsproto>=1.2.0",
-    "werkzeug>=3.0.1",
-]
 
 [tool.pdm.build]
 includes = ["nonebot"]
@@ -80,3 +73,12 @@ defineConstant = { PYDANTIC_V2 = true }
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
+
+[dependency-groups]
+test = [
+    "nonebug>=0.3.5",
+    "pytest-asyncio==0.26.0",
+    "pytest-xdist>=3.5.0",
+    "wsproto>=1.2.0",
+    "werkzeug>=3.0.1",
+]
