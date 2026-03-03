@@ -1,7 +1,7 @@
 from enum import Enum
 from copy import deepcopy
 from typing_extensions import override
-from typing import TYPE_CHECKING, TypeVar, Optional
+from typing import TYPE_CHECKING, TypeVar
 
 from nonebot.utils import escape_tag
 from nonebot.compat import model_dump, model_validator, type_validate_python
@@ -225,7 +225,7 @@ class MessageEvent(Event):
     user: User  # type: ignore
     message: SatoriMessage  # type: ignore
     to_me: bool = False
-    reply: Optional[RenderMessage] = None
+    reply: RenderMessage | None = None
 
     if TYPE_CHECKING:
         _message: Message
@@ -352,7 +352,7 @@ class PrivateMessageDeletedEvent(MessageDeletedEvent, PrivateMessageEvent):
     @override
     def get_event_description(self) -> str:
         return escape_tag(
-            f"Message {self.msg_id} from " f"{self.user.name or self.user.nick or ''}({self.channel.id}) deleted"
+            f"Message {self.msg_id} from {self.user.name or self.user.nick or ''}({self.channel.id}) deleted"
         )
 
 
@@ -392,7 +392,7 @@ class ReactionEvent(NoticeEvent):
     user: User  # type: ignore
     message: SatoriMessage  # type: ignore
 
-    reply: Optional[RenderMessage] = None
+    reply: RenderMessage | None = None
     to_me: bool = False
 
     if TYPE_CHECKING:
@@ -593,7 +593,7 @@ class PublicInteractionCommandArgvEvent(InteractionCommandArgvEvent):
 class InteractionCommandMessageEvent(InteractionCommandEvent):
     message: SatoriMessage  # type: ignore
     to_me: bool = False
-    reply: Optional[RenderMessage] = None
+    reply: RenderMessage | None = None
 
     @model_validator(mode="before")
     def generate_message(cls, values):

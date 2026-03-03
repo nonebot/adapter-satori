@@ -58,7 +58,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def at(
         user_id: str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> "At":
         data = {"id": user_id}
         if name:
@@ -68,7 +68,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def at_role(
         role: str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> "At":
         data = {"role": role}
         if name:
@@ -80,28 +80,28 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return At("at", {"type": "here" if here else "all"})
 
     @staticmethod
-    def sharp(channel_id: str, name: Optional[str] = None) -> "Sharp":
+    def sharp(channel_id: str, name: str | None = None) -> "Sharp":
         data = {"id": channel_id}
         if name:
             data["name"] = name
         return Sharp("sharp", data)  # type: ignore
 
     @staticmethod
-    def link(href: str, display: Optional[str] = None) -> "Link":
+    def link(href: str, display: str | None = None) -> "Link":
         if display:
             return Link("link", {"text": href, "display": display})
         return Link("link", {"text": href})
 
     @staticmethod
     def image(
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        raw: Optional[Union[bytes, BytesIO]] = None,
-        mime: Optional[str] = None,
-        name: Optional[str] = None,
-        extra: Optional[dict] = None,
-        cache: Optional[bool] = None,
-        timeout: Optional[int] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mime: str | None = None,
+        name: str | None = None,
+        extra: dict | None = None,
+        cache: bool | None = None,
+        timeout: int | None = None,
     ) -> "Image":
         if url:
             data = {"src": url}
@@ -122,16 +122,16 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def audio(
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        raw: Optional[Union[bytes, BytesIO]] = None,
-        mime: Optional[str] = None,
-        name: Optional[str] = None,
-        duration: Optional[float] = None,
-        poster: Optional[str] = None,
-        extra: Optional[dict] = None,
-        cache: Optional[bool] = None,
-        timeout: Optional[int] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mime: str | None = None,
+        name: str | None = None,
+        duration: float | None = None,
+        poster: str | None = None,
+        extra: dict | None = None,
+        cache: bool | None = None,
+        timeout: int | None = None,
     ) -> "Audio":
         if url:
             data = {"src": url}
@@ -156,15 +156,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def video(
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        raw: Optional[Union[bytes, BytesIO]] = None,
-        mime: Optional[str] = None,
-        name: Optional[str] = None,
-        poster: Optional[str] = None,
-        extra: Optional[dict] = None,
-        cache: Optional[bool] = None,
-        timeout: Optional[int] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mime: str | None = None,
+        name: str | None = None,
+        poster: str | None = None,
+        extra: dict | None = None,
+        cache: bool | None = None,
+        timeout: int | None = None,
     ) -> "Video":
         if url:
             data = {"src": url}
@@ -187,15 +187,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def file(
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        raw: Optional[Union[bytes, BytesIO]] = None,
-        mime: Optional[str] = None,
-        name: Optional[str] = None,
-        poster: Optional[str] = None,
-        extra: Optional[dict] = None,
-        cache: Optional[bool] = None,
-        timeout: Optional[int] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mime: str | None = None,
+        name: str | None = None,
+        poster: str | None = None,
+        extra: dict | None = None,
+        cache: bool | None = None,
+        timeout: int | None = None,
     ) -> "File":
         if url:
             data = {"src": url}
@@ -218,8 +218,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def message(
-        mid: Optional[str] = None,
-        forward: Optional[bool] = None,
+        mid: str | None = None,
+        forward: bool | None = None,
         content: Optional["Message"] = None,
     ) -> "RenderMessage":
         data = {}
@@ -232,7 +232,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def quote(
         mid: str,
-        forward: Optional[bool] = None,
+        forward: bool | None = None,
         content: Optional["Message"] = None,
     ) -> "RenderMessage":
         data = {"id": mid}
@@ -243,8 +243,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def author(
         user_id: str,
-        name: Optional[str] = None,
-        avatar: Optional[str] = None,
+        name: str | None = None,
+        avatar: str | None = None,
     ) -> "Author":
         data = {"id": user_id}
         if name:
@@ -254,7 +254,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Author("author", data)  # type: ignore
 
     @staticmethod
-    def action_button(button_id: str, display: Optional[str] = None, theme: Optional[str] = None):
+    def action_button(button_id: str, display: str | None = None, theme: str | None = None):
         data = {"type": "action", "id": button_id}
         if display:
             data["display"] = display
@@ -263,7 +263,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Button("button", data)  # type: ignore
 
     @staticmethod
-    def link_button(url: str, display: Optional[str] = None, theme: Optional[str] = None):
+    def link_button(url: str, display: str | None = None, theme: str | None = None):
         data = {"type": "link", "href": url}
         if display:
             data["display"] = display
@@ -272,7 +272,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Button("button", data)  # type: ignore
 
     @staticmethod
-    def input_button(text: str, display: Optional[str] = None, theme: Optional[str] = None):
+    def input_button(text: str, display: str | None = None, theme: str | None = None):
         data = {"type": "input", "text": text}
         if display:
             data["display"] = display
@@ -511,9 +511,9 @@ class ImageData(TypedDict):
 @dataclass
 class Image(MessageSegment):
     data: ImageData = field(default_factory=dict)  # type: ignore
-    extra: InitVar[Optional[dict]] = None
+    extra: InitVar[dict | None] = None
 
-    def __post_init__(self, extra: Optional[dict]):
+    def __post_init__(self, extra: dict | None):
         if extra:
             self.data.update(extra)  # type: ignore
         if "cache" in self.data:
@@ -541,9 +541,9 @@ class AudioData(TypedDict):
 @dataclass
 class Audio(MessageSegment):
     data: AudioData = field(default_factory=dict)  # type: ignore
-    extra: InitVar[Optional[dict]] = None
+    extra: InitVar[dict | None] = None
 
-    def __post_init__(self, extra: Optional[dict]):
+    def __post_init__(self, extra: dict | None):
         if extra:
             self.data.update(extra)  # type: ignore
         if "cache" in self.data:
@@ -571,9 +571,9 @@ class VideoData(TypedDict):
 @dataclass
 class Video(MessageSegment):
     data: VideoData = field(default_factory=dict)  # type: ignore
-    extra: InitVar[Optional[dict]] = None
+    extra: InitVar[dict | None] = None
 
-    def __post_init__(self, extra: Optional[dict]):
+    def __post_init__(self, extra: dict | None):
         if extra:
             self.data.update(extra)  # type: ignore
         if "cache" in self.data:
@@ -602,9 +602,9 @@ class FileData(TypedDict):
 @dataclass
 class File(MessageSegment):
     data: FileData = field(default_factory=dict)  # type: ignore
-    extra: InitVar[Optional[dict]] = None
+    extra: InitVar[dict | None] = None
 
-    def __post_init__(self, extra: Optional[dict]):
+    def __post_init__(self, extra: dict | None):
         if extra:
             self.data.update(extra)  # type: ignore
         if "cache" in self.data:
@@ -684,10 +684,10 @@ class Button(MessageSegment):
             attr.append(f'theme="{escape(self.data["theme"])}"')
         inner = "".join(str(c) for c in self._children)
         if "display" in self.data:
-            return f'<button {" ".join(attr)}>{escape(self.data["display"])}{inner}</button>'
+            return f"<button {' '.join(attr)}>{escape(self.data['display'])}{inner}</button>"
         if inner:
-            return f'<button {" ".join(attr)}>{inner}</button>'
-        return f'<button {" ".join(attr)} />'
+            return f"<button {' '.join(attr)}>{inner}</button>"
+        return f"<button {' '.join(attr)} />"
 
 
 @dataclass
@@ -732,7 +732,7 @@ STYLE_TYPE_MAP = {
 }
 
 
-def handle(element: Element, upper_styles: Optional[list[str]] = None):
+def handle(element: Element, upper_styles: list[str] | None = None):
     tag = element.tag()
     if tag in ELEMENT_TYPE_MAP:
         seg_cls, seg_type = ELEMENT_TYPE_MAP[tag]
@@ -786,7 +786,7 @@ class Message(BaseMessage[MessageSegment]):
 
     def __init__(
         self,
-        message: Union[str, None, Iterable[MessageSegment], MessageSegment] = None,
+        message: str | None | Iterable[MessageSegment] | MessageSegment = None,
     ):
         if isinstance(message, str):
             super().__init__(self.from_satori_element(parse(message)))
@@ -794,13 +794,13 @@ class Message(BaseMessage[MessageSegment]):
             super().__init__(message)
 
     @override
-    def __add__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
+    def __add__(self, other: str | MessageSegment | Iterable[MessageSegment]) -> "Message":
         result = self.copy()
         result += MessageSegment.text(other) if isinstance(other, str) else other
         return result.__merge_text__()
 
     @override
-    def __radd__(self, other: Union[str, MessageSegment, Iterable[MessageSegment]]) -> "Message":
+    def __radd__(self, other: str | MessageSegment | Iterable[MessageSegment]) -> "Message":
         result = self.__class__(MessageSegment.text(other) if isinstance(other, str) else other)
         return result + self
 

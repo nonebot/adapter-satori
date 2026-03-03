@@ -1,9 +1,10 @@
 import re
 from enum import IntEnum
 from collections.abc import Iterable
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 from dataclasses import field, dataclass
-from typing import Any, Union, Literal, TypeVar, Callable, Optional, TypedDict, cast
+from typing import Any, Union, Literal, TypeVar, Optional, TypedDict, cast
+from collections.abc import Callable
 
 T = TypeVar("T")
 
@@ -36,7 +37,7 @@ def snake_case(source: str) -> str:
     return re.sub(".[A-Z]", lambda mat: mat[0][0] + "_" + mat[0][1:].lower(), uncapitalize(source).replace("-", "_"))
 
 
-def ensure_list(value: Union[T, list[T], None]) -> list[T]:
+def ensure_list(value: T | list[T] | None) -> list[T]:
     return value if isinstance(value, list) else [value] if value else []
 
 
@@ -69,12 +70,12 @@ class Element:
     type: str
     attrs: dict[str, Any]
     children: list["Element"]
-    source: Optional[str] = None
+    source: str | None = None
 
     def __init__(
         self,
-        type: Union[str, Render[Fragment, Any]],
-        attrs: Optional[dict[str, Any]] = None,
+        type: str | Render[Fragment, Any],
+        attrs: dict[str, Any] | None = None,
         *children: Fragment,
     ) -> None:
         self.attrs = {}
@@ -165,7 +166,7 @@ def parse_selector(input: str) -> list[list[Selector]]:
     return [_quert(q) for q in input.split(",")]
 
 
-def select(source: Union[str, list[Element]], query: Union[str, list[list[Selector]]]) -> list[Element]:
+def select(source: str | list[Element], query: str | list[list[Selector]]) -> list[Element]:
     if not source or not query:
         return []
     if isinstance(source, str):
@@ -253,7 +254,7 @@ class StackItem(TypedDict):
     slot: str
 
 
-def fold_tokens(tokens: list[Union[str, Token]]) -> list[Union[str, Token]]:
+def fold_tokens(tokens: list[str | Token]) -> list[str | Token]:
     stack: list[StackItem] = [
         {
             "token": Token(
@@ -268,7 +269,7 @@ def fold_tokens(tokens: list[Union[str, Token]]) -> list[Union[str, Token]]:
         }
     ]
 
-    def push_token(*tokens: Union[str, Token]):
+    def push_token(*tokens: str | Token):
         token = stack[0]["token"]
         token.children[stack[0]["slot"]].extend(tokens)
 
@@ -291,7 +292,7 @@ def fold_tokens(tokens: list[Union[str, Token]]) -> list[Union[str, Token]]:
     return stack[-1]["token"].children["default"]
 
 
-def parse_tokens(tokens: list[Union[str, Token]], context: Optional[dict] = None) -> list[Element]:
+def parse_tokens(tokens: list[str | Token], context: dict | None = None) -> list[Element]:
     result: list[Element] = []
     for token in tokens:
         if isinstance(token, str):
@@ -337,8 +338,8 @@ def parse_tokens(tokens: list[Union[str, Token]], context: Optional[dict] = None
     return result
 
 
-def parse(src: str, context: Optional[dict] = None):
-    tokens: list[Union[str, Token]] = []
+def parse(src: str, context: dict | None = None):
+    tokens: list[str | Token] = []
 
     def push_text(text: str):
         if text:

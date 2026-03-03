@@ -3,8 +3,8 @@ from os import PathLike
 from enum import IntEnum
 from pathlib import Path
 from datetime import datetime
-from typing_extensions import TypeAlias
-from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar, Optional
+from typing import TypeAlias
+from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar
 
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, field_validator, model_validator
@@ -22,8 +22,8 @@ class ChannelType(IntEnum):
 class Channel(BaseModel):
     id: str
     type: ChannelType = Field(default=ChannelType.TEXT)
-    name: Optional[str] = None
-    parent_id: Optional[str] = None
+    name: str | None = None
+    parent_id: str | None = None
 
     if PYDANTIC_V2:
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
@@ -36,8 +36,8 @@ class Channel(BaseModel):
 
 class Guild(BaseModel):
     id: str
-    name: Optional[str] = None
-    avatar: Optional[str] = None
+    name: str | None = None
+    avatar: str | None = None
 
     if PYDANTIC_V2:
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
@@ -50,10 +50,10 @@ class Guild(BaseModel):
 
 class User(BaseModel):
     id: str
-    name: Optional[str] = None
-    nick: Optional[str] = None
-    avatar: Optional[str] = None
-    is_bot: Optional[bool] = None
+    name: str | None = None
+    nick: str | None = None
+    avatar: str | None = None
+    is_bot: bool | None = None
 
     if PYDANTIC_V2:
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
@@ -65,10 +65,10 @@ class User(BaseModel):
 
 
 class Member(BaseModel):
-    user: Optional[User] = None
-    nick: Optional[str] = None
-    avatar: Optional[str] = None
-    joined_at: Optional[datetime] = None
+    user: User | None = None
+    nick: str | None = None
+    avatar: str | None = None
+    joined_at: datetime | None = None
 
     @field_validator("joined_at", mode="before")
     def parse_joined_at(cls, v):
@@ -93,7 +93,7 @@ class Member(BaseModel):
 
 class Role(BaseModel):
     id: str
-    name: Optional[str] = None
+    name: str | None = None
 
     if PYDANTIC_V2:
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
@@ -121,8 +121,8 @@ class Login(BaseModel):
     sn: int
     status: LoginStatus
     adapter: str
-    platform: Optional[str] = None
-    user: Optional[User] = None
+    platform: str | None = None
+    user: User | None = None
     features: list[str] = Field(default_factory=list)
 
     @property
@@ -185,12 +185,12 @@ class Opcode(IntEnum):
 
 class Payload(BaseModel):
     op: Opcode = Field(...)
-    body: Optional[dict[str, Any]] = Field(None)
+    body: dict[str, Any] | None = Field(None)
 
 
 class Identify(BaseModel):
-    token: Optional[str] = None
-    sn: Optional[int] = None
+    token: str | None = None
+    sn: int | None = None
 
 
 class Ready(BaseModel):
@@ -233,12 +233,12 @@ class MetaPayload(Payload):
 class MessageObject(BaseModel):
     id: str
     content: str
-    channel: Optional[Channel] = None
-    guild: Optional[Guild] = None
-    member: Optional[Member] = None
-    user: Optional[User] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    channel: Channel | None = None
+    guild: Guild | None = None
+    member: Member | None = None
+    user: User | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     @field_validator("created_at", mode="before")
     def parse_created_at(cls, v):
@@ -274,22 +274,22 @@ class MessageObject(BaseModel):
 
 
 class MessageReceipt(MessageObject):
-    content: Optional[str] = None  # type: ignore
+    content: str | None = None  # type: ignore
 
 
 class Event(BaseModel):
     type: str
     timestamp: datetime
     login: LoginOnline
-    argv: Optional[ArgvInteraction] = None
-    button: Optional[ButtonInteraction] = None
-    channel: Optional[Channel] = None
-    guild: Optional[Guild] = None
-    member: Optional[Member] = None
-    message: Optional[MessageObject] = None
-    operator: Optional[User] = None
-    role: Optional[Role] = None
-    user: Optional[User] = None
+    argv: ArgvInteraction | None = None
+    button: ButtonInteraction | None = None
+    channel: Channel | None = None
+    guild: Guild | None = None
+    member: Member | None = None
+    message: MessageObject | None = None
+    operator: User | None = None
+    role: Role | None = None
+    user: User | None = None
 
     @field_validator("timestamp", mode="before")
     def parse_timestamp(cls, v):
@@ -340,8 +340,8 @@ class EventPayload(Payload):
     body: dict
 
 
-PayloadType = Union[
-    Union[EventPayload, PingPayload, PongPayload, IdentifyPayload, ReadyPayload, MetaPayload],
+PayloadType = Union[  # noqa: UP007
+    EventPayload | PingPayload | PongPayload | IdentifyPayload | ReadyPayload | MetaPayload,
     Payload,
 ]
 
@@ -353,26 +353,25 @@ if PYDANTIC_V2:
 
     class PageResult(BaseModel, Generic[T]):
         data: list[T]
-        next: Optional[str] = None
+        next: str | None = None
 
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     class PageDequeResult(PageResult[T]):
-        prev: Optional[str] = None
+        prev: str | None = None
 
 else:
-
     from pydantic.generics import GenericModel
 
     class PageResult(GenericModel, Generic[T]):
         data: list[T]
-        next: Optional[str] = None
+        next: str | None = None
 
         class Config:
             extra = "allow"
 
     class PageDequeResult(PageResult[T], Generic[T]):
-        prev: Optional[str] = None
+        prev: str | None = None
 
 
 Direction: TypeAlias = Literal["before", "after", "around"]
@@ -381,7 +380,7 @@ Order: TypeAlias = Literal["asc", "desc"]
 
 class Upload:
     def __init__(
-        self, file: Union[bytes, IO[bytes], PathLike], mimetype: str = "image/png", name: Optional[str] = None
+        self, file: bytes | IO[bytes] | PathLike, mimetype: str = "image/png", name: str | None = None
     ):
         self.file = file
         self.mimetype = mimetype

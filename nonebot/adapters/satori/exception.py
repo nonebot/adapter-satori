@@ -1,4 +1,3 @@
-from typing import Optional
 
 from nonebot.drivers import Response
 from nonebot.exception import AdapterException
@@ -50,9 +49,9 @@ class ApiNotImplementedException(ActionFailed):
 
 
 class NetworkError(BaseNetworkError, SatoriAdapterException):
-    def __init__(self, msg: Optional[str] = None):
+    def __init__(self, msg: str | None = None):
         super().__init__()
-        self.msg: Optional[str] = msg
+        self.msg: str | None = msg
         """错误原因"""
 
     def __repr__(self):
@@ -63,7 +62,7 @@ class NetworkError(BaseNetworkError, SatoriAdapterException):
 
 
 class ApiNotAvailable(BaseApiNotAvailable, SatoriAdapterException):
-    def __init__(self, msg: Optional[str] = None):
+    def __init__(self, msg: str | None = None):
         super().__init__()
-        self.msg: Optional[str] = msg
+        self.msg: str | None = msg
         """错误原因"""

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from yarl import URL
 from pydantic import Field, BaseModel
@@ -11,7 +10,7 @@ class ClientInfo(BaseModel):
     """服务端的端口"""
     path: str = ""
     """服务端的自定义路径"""
-    token: Optional[str] = None
+    token: str | None = None
     """服务端的 token"""
 
     @property

@@ -1,7 +1,7 @@
 import re
 import json
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Optional, overload
+from typing import TYPE_CHECKING, Any, Union, Literal, overload
 
 from yarl import URL
 from nonebot.message import handle_event
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from .adapter import Adapter
 
 
-MESSAGE_EVENTS = Union[MessageEvent, ReactionEvent, InteractionCommandMessageEvent]
+MESSAGE_EVENTS = Union[MessageEvent, ReactionEvent, InteractionCommandMessageEvent]  # noqa: UP007
 
 
 async def _check_reply(bot: "Bot", event: MESSAGE_EVENTS) -> None:
@@ -284,7 +284,7 @@ class Bot(BaseBot):
     async def send(
         self,
         event: Event,
-        message: Union[str, Message, MessageSegment],
+        message: str | Message | MessageSegment,
         **kwargs,
     ) -> list[MessageReceipt]:
         if not event.channel:
@@ -293,8 +293,8 @@ class Bot(BaseBot):
 
     async def send_message(
         self,
-        channel: Union[str, Channel],
-        message: Union[str, Message, MessageSegment],
+        channel: str | Channel,
+        message: str | Message | MessageSegment,
     ) -> list[MessageReceipt]:
         """发送消息
 
@@ -307,8 +307,8 @@ class Bot(BaseBot):
 
     async def send_private_message(
         self,
-        user: Union[str, User],
-        message: Union[str, Message, MessageSegment],
+        user: str | User,
+        message: str | Message | MessageSegment,
     ) -> list[MessageReceipt]:
         """发送私聊消息
 
@@ -322,9 +322,9 @@ class Bot(BaseBot):
 
     async def update_message(
         self,
-        channel: Union[str, Channel],
+        channel: str | Channel,
         message_id: str,
-        message: Union[str, Message, MessageSegment],
+        message: str | Message | MessageSegment,
     ):
         """更新消息
 
@@ -394,7 +394,7 @@ class Bot(BaseBot):
         self,
         *,
         channel_id: str,
-        next_token: Optional[str] = None,
+        next_token: str | None = None,
         direction: Direction = "before",
         limit: int = 50,
         order: Order = "asc",
@@ -425,7 +425,7 @@ class Bot(BaseBot):
         return type_validate_python(Channel, res)
 
     @API
-    async def channel_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Channel]:
+    async def channel_list(self, *, guild_id: str, next_token: str | None = None) -> PageResult[Channel]:
         request = Request(
             "POST",
             self.info.api_base / "channel.list",
@@ -475,7 +475,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def user_channel_create(self, *, user_id: str, guild_id: Optional[str] = None) -> Channel:
+    async def user_channel_create(self, *, user_id: str, guild_id: str | None = None) -> Channel:
         data = {"user_id": user_id}
         if guild_id is not None:
             data["guild_id"] = guild_id
@@ -496,7 +496,7 @@ class Bot(BaseBot):
         return type_validate_python(Guild, await self._request(request))
 
     @API
-    async def guild_list(self, *, next_token: Optional[str] = None) -> PageResult[Guild]:
+    async def guild_list(self, *, next_token: str | None = None) -> PageResult[Guild]:
         request = Request(
             "POST",
             self.info.api_base / "guild.list",
@@ -514,7 +514,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_member_list(self, *, guild_id: str, next_token: Optional[str] = None) -> PageResult[Member]:
+    async def guild_member_list(self, *, guild_id: str, next_token: str | None = None) -> PageResult[Member]:
         request = Request(
             "POST",
             self.info.api_base / "guild.member.list",
@@ -577,7 +577,7 @@ class Bot(BaseBot):
         await self._request(request)
 
     @API
-    async def guild_role_list(self, guild_id: str, next_token: Optional[str] = None) -> PageResult[Role]:
+    async def guild_role_list(self, guild_id: str, next_token: str | None = None) -> PageResult[Role]:
         request = Request(
             "POST",
             self.info.api_base / "guild.role.list",
@@ -645,7 +645,7 @@ class Bot(BaseBot):
         channel_id: str,
         message_id: str,
         emoji: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> None:
         data = {"channel_id": channel_id, "message_id": message_id, "emoji": emoji}
         if user_id is not None:
@@ -663,7 +663,7 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         message_id: str,
-        emoji: Optional[str] = None,
+        emoji: str | None = None,
     ) -> None:
         data = {"channel_id": channel_id, "message_id": message_id}
         if emoji is not None:
@@ -682,7 +682,7 @@ class Bot(BaseBot):
         channel_id: str,
         message_id: str,
         emoji: str,
-        next_token: Optional[str] = None,
+        next_token: str | None = None,
     ) -> PageResult[User]:
         request = Request(
             "POST",
@@ -714,7 +714,7 @@ class Bot(BaseBot):
         return type_validate_python(User, await self._request(request))
 
     @API
-    async def friend_list(self, *, next_token: Optional[str] = None) -> PageResult[User]:
+    async def friend_list(self, *, next_token: str | None = None) -> PageResult[User]:
         request = Request(
             "POST",
             self.info.api_base / "friend.list",
@@ -759,7 +759,7 @@ class Bot(BaseBot):
         )
         return type_validate_python(Meta, await self._request(request))
 
-    async def webhook_create(self, url: str, token: Optional[str] = None):
+    async def webhook_create(self, url: str, token: str | None = None):
         """创建 Webhook。"""
         request = Request("POST", self.info.api_base / "meta/webhook.create", json={"url": url, "token": token})
         return await self._request(request)

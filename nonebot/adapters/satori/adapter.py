@@ -2,7 +2,7 @@ import json
 import asyncio
 from collections import defaultdict
 from typing_extensions import override
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed
@@ -117,7 +117,7 @@ class Adapter(BaseAdapter):
                 self.sequences[info.identity] = payload.body["sn"]
         return payload
 
-    async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Optional[Literal[True]]:
+    async def _authenticate(self, info: ClientInfo, ws: WebSocket) -> Literal[True] | None:
         """鉴权连接"""
         payload = IdentifyPayload(
             op=Opcode.IDENTIFY,
@@ -142,7 +142,7 @@ class Adapter(BaseAdapter):
         if not isinstance(resp, ReadyPayload):
             log(
                 "ERROR",
-                "Received unexpected payload while authenticating: " f"{escape_tag(repr(resp))}",
+                f"Received unexpected payload while authenticating: {escape_tag(repr(resp))}",
             )
             return
         for login in resp.body.logins:
@@ -177,13 +177,13 @@ class Adapter(BaseAdapter):
     async def ws(self, info: ClientInfo) -> None:
         ws_url = info.ws_base / "events"
         req = Request("GET", ws_url, timeout=60.0)
-        heartbeat_task: Optional["asyncio.Task"] = None
+        heartbeat_task: "asyncio.Task" | None = None
         while True:
             try:
                 async with self.websocket(req) as ws:
                     log(
                         "DEBUG",
-                        f"WebSocket Connection to " f"{escape_tag(str(ws_url))} established",
+                        f"WebSocket Connection to {escape_tag(str(ws_url))} established",
                     )
                     try:
                         if not await self._authenticate(info, ws):
@@ -331,7 +331,7 @@ class Adapter(BaseAdapter):
     @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
         log("DEBUG", f"Bot {bot.identity} calling API <y>{api}</y>")
-        api_handler: Optional[API] = getattr(bot.__class__, api, None)
+        api_handler: API | None = getattr(bot.__class__, api, None)
         if api_handler is None:
             raise ApiNotAvailable(api)
         return await api_handler(bot, **data)
