@@ -14,24 +14,24 @@ from .models import Event as SatoriEvent
 from .message import Message, RenderMessage
 from .models import MessageObject as SatoriMessage
 from .models import ArgvInteraction, ButtonInteraction
-from .models import Guild, Login, Member, Channel, ChannelType
+from .models import Guild, Login, Member, Channel, ChannelType, EmojiObject
 
 E = TypeVar("E", bound="Event")
 
 
 class EventType(str, Enum):
-    FRIEND_REQUEST = "friend-request"
     GUILD_ADDED = "guild-added"
+    GUILD_REMOVED = "guild-removed"
+    GUILD_UPDATED = "guild-updated"
     GUILD_MEMBER_ADDED = "guild-member-added"
     GUILD_MEMBER_REMOVED = "guild-member-removed"
-    GUILD_MEMBER_REQUEST = "guild-member-request"
     GUILD_MEMBER_UPDATED = "guild-member-updated"
-    GUILD_REMOVED = "guild-removed"
-    GUILD_REQUEST = "guild-request"
     GUILD_ROLE_CREATED = "guild-role-created"
     GUILD_ROLE_DELETED = "guild-role-deleted"
     GUILD_ROLE_UPDATED = "guild-role-updated"
-    GUILD_UPDATED = "guild-updated"
+    GUILD_EMOJI_CREATED = "guild-emoji-added"
+    GUILD_EMOJI_DELETED = "guild-emoji-deleted"
+    GUILD_EMOJI_UPDATED = "guild-emoji-updated"
     LOGIN_ADDED = "login-added"
     LOGIN_REMOVED = "login-removed"
     LOGIN_UPDATED = "login-updated"
@@ -40,9 +40,13 @@ class EventType(str, Enum):
     MESSAGE_UPDATED = "message-updated"
     REACTION_ADDED = "reaction-added"
     REACTION_REMOVED = "reaction-removed"
-    INTERNAL = "internal"
     INTERACTION_BUTTON = "interaction/button"
     INTERACTION_COMMAND = "interaction/command"
+    FRIEND_REQUEST = "friend-request"
+    GUILD_REQUEST = "guild-request"
+    GUILD_MEMBER_REQUEST = "guild-member-request"
+
+    INTERNAL = "internal"
 
 
 class Event(BaseEvent, SatoriEvent):
@@ -199,6 +203,10 @@ class GuildRoleDeletedEvent(GuildRoleEvent):
 @register_event_class
 class GuildRoleUpdatedEvent(GuildRoleEvent):
     __type__ = EventType.GUILD_ROLE_UPDATED
+
+
+class GuildEmojiEvent(GuildEvent):
+    emoji: EmojiObject  # type: ignore
 
 
 class LoginEvent(NoticeEvent):
@@ -391,6 +399,7 @@ class ReactionEvent(NoticeEvent):
     guild: Guild  # type: ignore
     user: User  # type: ignore
     message: SatoriMessage  # type: ignore
+    emoji: EmojiObject  # type: ignore
 
     reply: RenderMessage | None = None
     to_me: bool = False
@@ -439,7 +448,7 @@ class ReactionAddedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Reaction added to msg {self.msg_id} by {self.user.name}({self.guild.id})")
+        return escape_tag(f"Reaction {self.emoji.name or self.emoji.id} added to msg {self.msg_id} by {self.user.name}({self.guild.id})")
 
 
 @register_event_class
@@ -448,7 +457,7 @@ class ReactionRemovedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Reaction removed from msg {self.msg_id}")
+        return escape_tag(f"Reaction {self.emoji.name or self.emoji.id} removed from msg {self.msg_id}")
 
 
 @register_event_class

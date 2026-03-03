@@ -14,10 +14,10 @@ from .element import parse
 from .utils import API, log
 from .config import ClientInfo
 from .models import MessageObject as SatoriMessage
-from .models import MessageReceipt, PageDequeResult
+from .models import EmojiObject, PageDequeResult
 from .message import Author, Message, RenderMessage, MessageSegment
 from .event import Event, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
-from .models import Meta, Role, User, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
+from .models import Meta, Role, User, Friend, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
 from .exception import (
     ActionFailed,
     NetworkError,
@@ -239,6 +239,7 @@ class Bot(BaseBot):
     async def _request(self, request: Request) -> Any:
         request.headers.update(self.get_authorization_header())
         request.json = {k: v for k, v in request.json.items() if v is not None} if request.json else None
+        request.timeout = self.info.timeout
         try:
             response = await self.sess.request(request)
         except Exception as e:
@@ -286,39 +287,43 @@ class Bot(BaseBot):
         event: Event,
         message: str | Message | MessageSegment,
         **kwargs,
-    ) -> list[MessageReceipt]:
+    ) -> list[SatoriMessage]:
         if not event.channel:
             raise RuntimeError("Event cannot be replied to!")
-        return await self.send_message(event.channel.id, message)
+        return await self.send_message(event.channel.id, message, kwargs.get("referrer", event.referrer))
 
     async def send_message(
         self,
         channel: str | Channel,
         message: str | Message | MessageSegment,
-    ) -> list[MessageReceipt]:
+        referrer: dict | None = None,
+    ) -> list[SatoriMessage]:
         """发送消息
 
         参数:
             channel (str | Channel): 要发送的频道 ID
             message (str | Message | MessageSegment): 要发送的消息
+            referrer (dict | None): 消息来源信息
         """
         channel_id = channel.id if isinstance(channel, Channel) else channel
-        return await self.message_create(channel_id=channel_id, content=str(message))
+        return await self.message_create(channel_id=channel_id, content=str(message), referrer=referrer)
 
     async def send_private_message(
         self,
         user: str | User,
         message: str | Message | MessageSegment,
-    ) -> list[MessageReceipt]:
+        referrer: dict | None = None,
+    ) -> list[SatoriMessage]:
         """发送私聊消息
 
         参数:
             user (str | User): 要发送的用户 ID
             message (str | Message | MessageSegment): 要发送的消息
+            referrer (dict | None): 消息来源信息
         """
         user_id = user.id if isinstance(user, User) else user
         channel = await self.user_channel_create(user_id=user_id)
-        return await self.message_create(channel_id=channel.id, content=str(message))
+        return await self.message_create(channel_id=channel.id, content=str(message), referrer=referrer)
 
     async def update_message(
         self,
@@ -342,14 +347,18 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         content: str,
-    ) -> list[MessageReceipt]:
+        referrer: dict | None = None,
+    ) -> list[SatoriMessage]:
+        data: dict = {"channel_id": channel_id, "content": content}
+        if referrer is not None:
+            data["referrer"] = referrer
         request = Request(
             "POST",
             self.info.api_base / "message.create",
-            json={"channel_id": channel_id, "content": content},
+            json=data,
         )
         res = await self._request(request)
-        return [type_validate_python(MessageReceipt, i) for i in res]
+        return [type_validate_python(SatoriMessage, i) for i in res]
 
     @API
     async def message_get(self, *, channel_id: str, message_id: str) -> SatoriMessage:
@@ -629,12 +638,12 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         message_id: str,
-        emoji: str,
+        emoji_id: str,
     ) -> None:
         request = Request(
             "POST",
             self.info.api_base / "reaction.create",
-            json={"channel_id": channel_id, "message_id": message_id, "emoji": emoji},
+            json={"channel_id": channel_id, "message_id": message_id, "emoji_id": emoji_id},
         )
         await self._request(request)
 
@@ -644,10 +653,10 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         message_id: str,
-        emoji: str,
+        emoji_id: str,
         user_id: str | None = None,
     ) -> None:
-        data = {"channel_id": channel_id, "message_id": message_id, "emoji": emoji}
+        data = {"channel_id": channel_id, "message_id": message_id, "emoji_id": emoji_id}
         if user_id is not None:
             data["user_id"] = user_id
         request = Request(
@@ -663,11 +672,11 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         message_id: str,
-        emoji: str | None = None,
+        emoji_id: str | None = None,
     ) -> None:
         data = {"channel_id": channel_id, "message_id": message_id}
-        if emoji is not None:
-            data["emoji"] = emoji
+        if emoji_id is not None:
+            data["emoji_id"] = emoji_id
         request = Request(
             "POST",
             self.info.api_base / "reaction.clear",
@@ -681,7 +690,7 @@ class Bot(BaseBot):
         *,
         channel_id: str,
         message_id: str,
-        emoji: str,
+        emoji_id: str,
         next_token: str | None = None,
     ) -> PageResult[User]:
         request = Request(
@@ -690,7 +699,7 @@ class Bot(BaseBot):
             json={
                 "channel_id": channel_id,
                 "message_id": message_id,
-                "emoji": emoji,
+                "emoji_id": emoji_id,
                 "next": next_token,
             },
         )
@@ -714,13 +723,22 @@ class Bot(BaseBot):
         return type_validate_python(User, await self._request(request))
 
     @API
-    async def friend_list(self, *, next_token: str | None = None) -> PageResult[User]:
+    async def friend_list(self, *, next_token: str | None = None) -> PageResult[Friend]:
         request = Request(
             "POST",
             self.info.api_base / "friend.list",
             json={"next": next_token},
         )
-        return type_validate_python(PageResult[User], await self._request(request))
+        return type_validate_python(PageResult[Friend], await self._request(request))
+
+    @API
+    async def friend_delete(self, *, user_id: str) -> None:
+        request = Request(
+            "POST",
+            self.info.api_base / "friend.delete",
+            json={"user_id": user_id},
+        )
+        await self._request(request)
 
     @API
     async def friend_approve(self, *, request_id: str, approve: bool, comment: str) -> None:

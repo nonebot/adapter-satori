@@ -64,11 +64,41 @@ class User(BaseModel):
             extra = "allow"
 
 
+class Friend(BaseModel):
+    user: User
+    nick: str | None = None
+
+    @property
+    def remark(self) -> str | None:
+        return self.nick
+
+    if PYDANTIC_V2:
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+        class Config:
+            extra = "allow"
+
+
+class Role(BaseModel):
+    id: str
+    name: str | None = None
+
+    if PYDANTIC_V2:
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
+
 class Member(BaseModel):
     user: User | None = None
     nick: str | None = None
     avatar: str | None = None
     joined_at: datetime | None = None
+    roles: list[Role] = Field(default_factory=list)
 
     @field_validator("joined_at", mode="before")
     def parse_joined_at(cls, v):
@@ -81,19 +111,6 @@ class Member(BaseModel):
         except ValueError as e:
             raise ValueError(f"invalid timestamp: {v}") from e
         return datetime.fromtimestamp(timestamp / 1000)
-
-    if PYDANTIC_V2:
-        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
-
-    else:
-
-        class Config:
-            extra = "allow"
-
-
-class Role(BaseModel):
-    id: str
-    name: str | None = None
 
     if PYDANTIC_V2:
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
@@ -230,15 +247,29 @@ class MetaPayload(Payload):
     body: MetaPartial
 
 
+class EmojiObject(BaseModel):
+    id: str
+    name: str | None = None
+
+    if PYDANTIC_V2:
+        model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
+
+    else:
+
+        class Config:
+            extra = "allow"
+
+
 class MessageObject(BaseModel):
     id: str
-    content: str
+    content: str = ""
     channel: Channel | None = None
     guild: Guild | None = None
     member: Member | None = None
     user: User | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    referrer: dict | None = None
 
     @field_validator("created_at", mode="before")
     def parse_created_at(cls, v):
@@ -273,10 +304,6 @@ class MessageObject(BaseModel):
             extra = "allow"
 
 
-class MessageReceipt(MessageObject):
-    content: str | None = None  # type: ignore
-
-
 class Event(BaseModel):
     type: str
     timestamp: datetime
@@ -290,6 +317,10 @@ class Event(BaseModel):
     operator: User | None = None
     role: Role | None = None
     user: User | None = None
+    referrer: dict | None = None
+    emoji: EmojiObject | None = None
+
+    sn: int = 0
 
     @field_validator("timestamp", mode="before")
     def parse_timestamp(cls, v):
@@ -341,7 +372,7 @@ class EventPayload(Payload):
 
 
 PayloadType = Union[  # noqa: UP007
-    EventPayload | PingPayload | PongPayload | IdentifyPayload | ReadyPayload | MetaPayload,
+    Union[EventPayload, PingPayload, PongPayload, IdentifyPayload, ReadyPayload, MetaPayload],  # noqa: UP007
     Payload,
 ]
 

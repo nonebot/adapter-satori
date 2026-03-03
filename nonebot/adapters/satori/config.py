@@ -12,6 +12,10 @@ class ClientInfo(BaseModel):
     """服务端的自定义路径"""
     token: str | None = None
     """服务端的 token"""
+    timeout: float | None = None
+    """API 请求超时时间"""
+    secure: bool = False
+    """是否使用 https 和 wss 连接"""
 
     @property
     def identity(self):
@@ -19,11 +23,11 @@ class ClientInfo(BaseModel):
 
     @property
     def api_base(self):
-        return URL(f"http://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
+        return URL(f"http{'s' if self.secure else ''}://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
 
     @property
     def ws_base(self):
-        return URL(f"ws://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
+        return URL(f"ws{'s' if self.secure else ''}://{self.host}:{self.port}") / self.path.lstrip("/") / "v1"
 
 
 class Config(BaseModel):

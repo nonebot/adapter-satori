@@ -87,6 +87,13 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Sharp("sharp", data)  # type: ignore
 
     @staticmethod
+    def emoji(emoji_id: str, name: str | None = None) -> "Emoji":
+        data = {"id": emoji_id}
+        if name:
+            data["name"] = name
+        return Emoji("emoji", data)  # type: ignore
+
+    @staticmethod
     def link(href: str, display: str | None = None) -> "Link":
         if display:
             return Link("link", {"text": href, "display": display})
@@ -476,6 +483,16 @@ class Sharp(MessageSegment):
     data: SharpData = field(default_factory=dict)  # type: ignore
 
 
+class EmojiData(TypedDict):
+    id: str
+    name: NotRequired[str]
+
+
+@dataclass
+class Emoji(MessageSegment):
+    data: EmojiData = field(default_factory=dict)  # type: ignore
+
+
 class LinkData(TypedDict):
     text: str
     display: NotRequired[str]
@@ -699,6 +716,7 @@ ELEMENT_TYPE_MAP = {
     "text": (Text, "text"),
     "at": (At, "at"),
     "sharp": (Sharp, "sharp"),
+    "emoji": (Emoji, "emoji"),
     "img": (Image, "img"),
     "image": (Image, "img"),
     "audio": (Audio, "audio"),

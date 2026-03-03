@@ -17,8 +17,8 @@ async def test_adapter(app: App):
     cmd = nonebot.on_command("test")
 
     @cmd.handle()
-    async def handle(bot: Bot):
-        await bot.send_message(channel="67890", message="hello")
+    async def handle(bot: Bot, event: PublicMessageCreatedEvent):
+        await bot.send_message(channel="67890", message="hello", referrer=event.referrer)
 
     async with app.test_matcher(cmd) as ctx:
         adapter: Adapter = nonebot.get_adapter(Adapter)
@@ -69,6 +69,7 @@ async def test_adapter(app: App):
                         "joined_at": 1000 * int(datetime.now().timestamp()),
                     },
                     "message": {"id": "abcde", "content": "/test"},
+                    "referrer": {"msg_id": "xxxxxxxxxx"}
                 },
             ),
         )
@@ -77,5 +78,6 @@ async def test_adapter(app: App):
             {
                 "channel_id": "67890",
                 "content": "hello",
+                "referrer": {"msg_id": "xxxxxxxxxx"}
             },
         )

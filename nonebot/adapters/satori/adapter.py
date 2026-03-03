@@ -109,7 +109,7 @@ class Adapter(BaseAdapter):
 
     async def receive_payload(self, info: ClientInfo, ws: WebSocket) -> Payload:
         data = json.loads(await ws.receive())
-        payload = type_validate_python(PayloadType, data)
+        payload = type_validate_python(PayloadType, data)  # type: ignore
         if isinstance(payload, EventPayload):
             if "id" in payload.body:
                 self.sequences[info.identity] = payload.body["id"]
@@ -177,7 +177,7 @@ class Adapter(BaseAdapter):
     async def ws(self, info: ClientInfo) -> None:
         ws_url = info.ws_base / "events"
         req = Request("GET", ws_url, timeout=60.0)
-        heartbeat_task: "asyncio.Task" | None = None
+        heartbeat_task: asyncio.Task | None = None
         while True:
             try:
                 async with self.websocket(req) as ws:
