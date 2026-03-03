@@ -13,11 +13,26 @@ from nonebot.adapters import Bot as BaseBot
 from .element import parse
 from .utils import API, log
 from .config import ClientInfo
+from .models import (
+    PageDequeResult,
+)
 from .models import MessageObject as SatoriMessage
-from .models import EmojiObject, PageDequeResult
 from .message import Author, Message, RenderMessage, MessageSegment
 from .event import Event, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
-from .models import Meta, Role, User, Friend, Guild, Login, Order, Member, Upload, Channel, Direction, PageResult
+from .models import (
+    Meta,
+    Role,
+    User,
+    Guild,
+    Login,
+    Order,
+    Friend,
+    Member,
+    Upload,
+    Channel,
+    Direction,
+    PageResult,
+)
 from .exception import (
     ActionFailed,
     NetworkError,

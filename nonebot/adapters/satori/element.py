@@ -1,10 +1,8 @@
 import re
 from enum import IntEnum
-from collections.abc import Iterable
-from typing import TypeAlias
 from dataclasses import field, dataclass
-from typing import Any, Union, Literal, TypeVar, Optional, TypedDict, cast
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
+from typing import Any, Union, Literal, TypeVar, TypeAlias, TypedDict, cast
 
 T = TypeVar("T")
 
@@ -47,7 +45,7 @@ Render: TypeAlias = Callable[[dict, list["Element"], S], T]
 Visitor: TypeAlias = Callable[["Element", S], T]
 
 
-def make_element(content: Union[str, bool, int, float, "Element"]) -> Optional["Element"]:
+def make_element(content: Union[str, bool, int, float, "Element"]) -> "Element | None":
     if isinstance(content, Element):
         return content
     if isinstance(content, (bool, int, float)):

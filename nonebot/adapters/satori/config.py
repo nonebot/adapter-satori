@@ -1,4 +1,3 @@
-
 from yarl import URL
 from pydantic import Field, BaseModel
 

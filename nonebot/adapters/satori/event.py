@@ -448,7 +448,10 @@ class ReactionAddedEvent(ReactionEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(f"Reaction {self.emoji.name or self.emoji.id} added to msg {self.msg_id} by {self.user.name}({self.guild.id})")
+        return escape_tag(
+            f"Reaction {self.emoji.name or self.emoji.id} added to msg {self.msg_id} "
+            f"by {self.user.name}({self.guild.id})"
+        )
 
 
 @register_event_class

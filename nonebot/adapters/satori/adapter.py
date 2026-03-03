@@ -1,8 +1,8 @@
 import json
 import asyncio
+from typing import Any, Literal
 from collections import defaultdict
 from typing_extensions import override
-from typing import Any, Literal
 
 from nonebot.utils import escape_tag
 from nonebot.exception import WebSocketClosed

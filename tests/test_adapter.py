@@ -69,15 +69,11 @@ async def test_adapter(app: App):
                         "joined_at": 1000 * int(datetime.now().timestamp()),
                     },
                     "message": {"id": "abcde", "content": "/test"},
-                    "referrer": {"msg_id": "xxxxxxxxxx"}
+                    "referrer": {"msg_id": "xxxxxxxxxx"},
                 },
             ),
         )
         ctx.should_call_api(
             "message_create",
-            {
-                "channel_id": "67890",
-                "content": "hello",
-                "referrer": {"msg_id": "xxxxxxxxxx"}
-            },
+            {"channel_id": "67890", "content": "hello", "referrer": {"msg_id": "xxxxxxxxxx"}},
         )

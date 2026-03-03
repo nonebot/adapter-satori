@@ -1,8 +1,8 @@
 import json
 import base64
 import socket
-from queue import Empty, Queue
 from typing import TypeVar
+from queue import Empty, Queue
 from collections.abc import Callable
 
 from wsproto.events import Ping

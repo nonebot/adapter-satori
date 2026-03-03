@@ -1,9 +1,6 @@
 from functools import partial
-from collections.abc import Awaitable
-from typing_extensions import ParamSpec
-from typing import Concatenate
-from typing import TYPE_CHECKING, Generic, TypeVar, overload
-from collections.abc import Callable
+from collections.abc import Callable, Awaitable
+from typing import TYPE_CHECKING, Generic, TypeVar, ParamSpec, Concatenate, overload
 
 from nonebot.utils import logger_wrapper
 
@@ -29,9 +26,7 @@ class API(Generic[B, P, R]):
     @overload
     def __get__(self, obj: B, objtype: type[B] | None) -> Callable[P, Awaitable[R]]: ...
 
-    def __get__(
-        self, obj: B | None, objtype: type[B] | None = None
-    ) -> "API[B, P, R] | Callable[P, Awaitable[R]]":
+    def __get__(self, obj: B | None, objtype: type[B] | None = None) -> "API[B, P, R] | Callable[P, Awaitable[R]]":
         if obj is None:
             return self
 

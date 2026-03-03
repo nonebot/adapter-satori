@@ -3,8 +3,7 @@ from os import PathLike
 from enum import IntEnum
 from pathlib import Path
 from datetime import datetime
-from typing import TypeAlias
-from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar
+from typing import IO, Any, Union, Generic, Literal, TypeVar, ClassVar, TypeAlias
 
 from pydantic import Field, BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump, field_validator, model_validator
@@ -76,6 +75,7 @@ class Friend(BaseModel):
         model_config: ClassVar[ConfigDict] = ConfigDict(extra="allow")  # type: ignore
 
     else:
+
         class Config:
             extra = "allow"
 
@@ -410,9 +410,7 @@ Order: TypeAlias = Literal["asc", "desc"]
 
 
 class Upload:
-    def __init__(
-        self, file: bytes | IO[bytes] | PathLike, mimetype: str = "image/png", name: str | None = None
-    ):
+    def __init__(self, file: bytes | IO[bytes] | PathLike, mimetype: str = "image/png", name: str | None = None):
         self.file = file
         self.mimetype = mimetype
 
