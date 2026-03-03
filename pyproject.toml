@@ -21,16 +21,6 @@ repository = "https://github.com/nonebot/adapter-satori"
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-[tool.pdm.dev-dependencies]
-dev = [
-    "isort>=5.13.2",
-    "black>=26.1.0",
-    "ruff>=0.15.4",
-    "pre-commit>=3.5.0",
-    "nonebot2[httpx,websockets]>=2.4.2",
-    "pydantic>=2.7.4",
-]
-
 [tool.pdm.build]
 includes = ["nonebot"]
 
@@ -81,4 +71,12 @@ test = [
     "pytest-xdist>=3.5.0",
     "wsproto>=1.2.0",
     "werkzeug>=3.0.1",
+]
+dev = [
+    "isort>=5.13.2",
+    "black>=26.1.0",
+    "ruff>=0.15.4",
+    "pre-commit>=3.5.0",
+    "nonebot2[httpx,websockets]>=2.4.2",
+    "pydantic>=2.7.4",
 ]
